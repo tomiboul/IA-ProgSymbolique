@@ -7,6 +7,7 @@
   <script charset="utf-8" src="echo.js"></script>
 </head>
 <body>
+  <img class="lutin_rouge" src="/images/lutin_rouge.png" alt="lutin malicieux">
   <div id="container">
     <div id="board"></div>
     <div id="bridge"></div>
@@ -60,7 +61,7 @@
       for (let col = 0; col < gridSize * 2 - 1; col++) {
         const element = document.createElement('div');
 
-        
+
         if (row % 2 === 0 && col % 2 === 0) {
           element.classList.add('cell');
         } 
