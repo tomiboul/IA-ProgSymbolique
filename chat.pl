@@ -22,10 +22,10 @@ chat("Comment est-ce qu on joue à Pontu ?", Rules) :- rules(Rules).
 
 
 answer(Input, Answer) :-
-    findall(Similarity-Response, (chat(Phrase, Response),isub(Phrase, Input, Similarity, [true, true, 2])), Similarities),
+    findall(Similarity-Response, (chat(Phrase, Response), isub(Phrase, Input, Similarity, [true, true, 2])), Similarities),
     sort(Similarities, SortedSimilarities),
     reverse(SortedSimilarities, [BestSimilarity-BestResponse|_]),
-    (BestSimilarity > 0.3->  Answer = BestResponse; Answer = "Je ne sais pas").
+    (BestSimilarity > 0.3->  Answer = BestResponse; produire_reponse(_, X), random_member(X, Response), Answer = Response.
 
 chatbot :-
     repeat,
@@ -59,9 +59,9 @@ ecrire_reponse(L) :-
 % input : Li, liste de mots a ecrire
 %         Mi, indique si le premier caractere du premier mot 
 %            doit etre mis en majuscule (1 si oui, 0 si non)
-%         Ei, indique le nombre d'espaces avant ce premier mot 
+%         Ei, indique le nombre d espaces avant ce premier mot 
 % output : Mf, booleen tel que decrit ci-dessus a appliquer 
-%          a la ligne suivante, si elle existe
+% a la ligne suivante, si elle existe
 
 ecrire_ligne([],M,_,M) :- 
     nl.
@@ -72,8 +72,8 @@ ecrire_ligne([],M,_,M) :-
  
  % ecrire_mot(M,B1,B2,E1,E2)
  % input : M, le mot a ecrire
- %         B1, indique s'il faut une majuscule (1 si oui, 0 si non)
- %         E1, indique s'il faut un espace avant le mot (1 si oui, 0 si non)
+ %         B1, indique s il faut une majuscule (1 si oui, 0 si non)
+ %         E1, indique s il faut un espace avant le mot (1 si oui, 0 si non)
  % output : B2, indique si le mot suivant prend une majuscule
  %          E2, indique si le mot suivant doit etre precede d'un espace
  
@@ -148,6 +148,8 @@ produire_reponse(_,[S1,S2,S3,S4]) :-
     S3 = "Je n ai pas compris la question, est ce que vous pourriez la reformuler ? ",
     S4 = "Je ne suis pas sur de connaitre la réponse à votre question, peut etre pourriez vous la reformuler ? ".
 
+
+
 /* Définition du minimum de trois valeurs */
 min3(A, B, C, Min) :- 
    min(A, B, Min1), 
@@ -156,11 +158,12 @@ min3(A, B, C, Min) :-
 min(A, B, A) :- A =< B, !.
 min(_, B, B).
 
+
 /* Fonction principale : conversion string -> liste */
 lev(A, B, Dist) :-
-   string_chars(A, ListA),  
-   string_chars(B, ListB), 
-   lev_list(ListA, ListB, Dist).
+   string_chars(A, ListCharA),  
+   string_chars(B, ListCharB), 
+   lev_list(ListCharA, ListCharB, Dist).
 
 
 
@@ -168,22 +171,21 @@ lev(A, B, Dist) :-
 
 /* 1. Formule Wikipedia : */
 
-
 /* Cas de base 1 : si un des mots est de longueur 0 -> Dist = longueur de l'autre mot */
 lev_list([], B, Dist) :- length(B, Dist).
 lev_list(A, [], Dist) :- length(A, Dist).
 
 
-/* Cas de base 2 : si les 2 mots commencent par la même lettre, on retire cette lettre et on rappelle lev() */
+/* Cas de base 2 : si les 2 mots commencent par la même lettre, on retire cette lettre et on rappelle lev_list() */
 lev_list([Head | TailA], [Head | TailB], Dist) :-
    lev_list(TailA, TailB, Dist).
 
 /* Sinon, on prend le minimum des trois opérations possibles, donc :
-Dist = min (
-lev(a-1, b)
-lev(a, b-1)
-lev(a-1, b-1)
-)*/
+Dist = min (lev(a-1, b)
+            lev(a, b-1)
+            lev(a-1, b-1)
+            )  
+*/
 
 
 lev_list([_ | T1], [_ | T2], Dist) :-
@@ -191,4 +193,4 @@ lev_list([_ | T1], [_ | T2], Dist) :-
    lev_list([_ | T1], T2, Dist2),  % Opération n°2: suppression dans B
    lev_list(T1, T2, Dist3),        % Opération n°3: remplacement
    min3(Dist1, Dist2, Dist3, Min),
-   Dist is Min + 1.  % Tenir compte de l'opération effectuée
+   Dist is Min + 1.                % Tenir compte de l'opération effectuée
