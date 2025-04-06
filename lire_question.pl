@@ -11,7 +11,7 @@
 % lire_question(L_Mots)
 % Pour tau-Prolog avec Javascript
 lire_question(LMots) :- read_atomics(LMots).
-  
+
 /* --------------------------------------------------------------------- */
 /*                                                                       */
 /*             Transform questions into a list of words                  */

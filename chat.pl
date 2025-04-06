@@ -41,6 +41,66 @@ chatbot :-
 
 
 
+
+
+/* Fonction principale : conversion string -> liste */
+lev(A, B, Dist, TabInit) :-
+   string_chars(A, ListCharA),  
+   string_chars(B, ListCharB), 
+   lev_list(ListCharA, ListCharB, Dist, TabInit).
+
+
+/* Version Levenshtein : */
+
+/* 1. Formule Wikipedia : */
+
+/* Cas de base 1 : si un des mots est de longueur 0 -> Dist = longueur de l'autre mot */
+lev_list(A, [], I_Tab1, TabInit) :- length(A, I_Tab1).
+lev_list([], B, J_Tab2, TabInit) :- length(B, J_Tab2).
+
+
+/* Cas de base 2 : si les 2 mots commencent par la même lettre, on retire cette lettre et on rappelle lev_list() */
+lev_list([Head | TailA], [Head | TailB], Dist, TabInit) :-
+   lev_list(TailA, TailB, Dist, TabInit).
+
+/* Sinon, on prend le minimum des trois opérations possibles, donc :
+Dist = min (lev(a-1, b)
+            lev(a, b-1)
+            lev(a-1, b-1)
+            )  
+*/
+lev_list([H1 | T1], [H2 | T2], Min, TabInit) :-
+   lev_list(T1, [H2 | T2], Dist1, TabInit),  
+   lev_list([H1 | T1], T2, Dist2, TabInit),  
+   lev_list(T1, T2, Dist3, TabInit),  
+   (H1 = H2 -> C is 0 ; C is 1),   
+   min3(Dist1, Dist2, Dist3, Min),
+
+   length([H1 | T1], LengthA),
+   length([H2 | T2], LengthB),
+
+   (member((LengthA, LengthB, _), TabInit) -> find_value((LengthA, LengthB, _), TabInit, Result),  Min = Result ; 
+      NewDist1 is Dist1 + 1,   
+      NewDist2 is Dist2 + 1,   
+      NewDist3 is Dist3 + C,
+      min3(NewDist1, NewDist2, NewDist3, Min2),
+      Min= Min2,
+      append([( LengthA, LengthB, Min2)], TabInit, TabInit)
+         ).
+   /*Dist is Min + 1.*/
+
+
+
+find_value((X,Y,_), [], 0).
+
+find_value((X,Y,_), [(X,Y,Z2)|ResteListe], Z2).
+
+find_value((X,Y,_), [(X2,Y2,Z2)|ResteListe], Result):-
+   find_value((X,Y,_), ResteListe, Result).
+
+
+
+
 /* Définition du minimum de trois valeurs */
 min3(A, B, C, Min) :- 
    min(A, B, Min1), 
@@ -50,50 +110,17 @@ min(A, B, A) :- A =< B, !.
 min(_, B, B).
 
 
-/* Fonction principale : conversion string -> liste */
-lev(A, B, Dist) :-
-   string_chars(A, ListCharA),  
-   string_chars(B, ListCharB), 
-   lev_list(ListCharA, ListCharB, Dist).
 
-
-/* Version Levenshtein : */
-
-/* 1. Formule Wikipedia : */
-
-/* Cas de base 1 : si un des mots est de longueur 0 -> Dist = longueur de l'autre mot */
-lev_list([], B, Dist) :- length(B, Dist).
-lev_list(A, [], Dist) :- length(A, Dist).
-
-
-/* Cas de base 2 : si les 2 mots commencent par la même lettre, on retire cette lettre et on rappelle lev_list() */
-lev_list([Head | TailA], [Head | TailB], Dist) :-
-   lev_list(TailA, TailB, Dist).
-
-/* Sinon, on prend le minimum des trois opérations possibles, donc :
-Dist = min (lev(a-1, b)
-            lev(a, b-1)
-            lev(a-1, b-1)
-            )  
-*/
-
-
-lev_list([_ | T1], [_ | T2], Dist) :-
-   lev_list(T1, [_ | T2], Dist1),  
-   lev_list([_ | T1], T2, Dist2),  
-   lev_list(T1, T2, Dist3),        
-   min3(Dist1, Dist2, Dist3, Min),
-   Dist is Min + 1.
 
 /* --------------------------------------------------------------------- */
 /*                                                                       */
 /*                         BOUCLE PRINCIPALE                             */
 /*                                                                       */
 /* --------------------------------------------------------------------- */
-fin(L) :- member(fin,L).
+/*fin(L) :- member(fin,L).*/
 
 
-pontuXL :- 
+/*pontuXL :- 
    nl, nl, nl,
    write('Bonjour, je suis PBot, le bot explicateur du jeu PontuXL.'), nl,
    write('En quoi puis-je vous etre utile ?'), 
@@ -106,5 +133,6 @@ pontuXL :-
       ecrire_reponse(L_reponse), nl,
    fin(L_Mots), !.
 
-:- pontuXL.
+:- pontuXL.*/
+
 
