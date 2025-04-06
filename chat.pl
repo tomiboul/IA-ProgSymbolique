@@ -1,6 +1,8 @@
 :- use_module(library(isub)).
 :- use_module(library(readutil)).
 :- use_module(lire_question,[lire_question/1]).
+:- use_module(produire_reponse,[produire_reponse/2]).
+:- use_module(produire_reponse,[produire_reponse/2]).
 
 rules('Les règles du jeu Pontu sont les suivantes.').
 
