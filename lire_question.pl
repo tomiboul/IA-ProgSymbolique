@@ -8,12 +8,11 @@
   /*                                                                       */
   /* --------------------------------------------------------------------- */
   
-  % lire_question(L_Mots)
+% lire_question(L_Mots)
+% Pour tau-Prolog avec Javascript
+lire_question(LMots) :- read_atomics(LMots).
   
-  % Pour tau-Prolog avec Javascript
-  lire_question(LMots) :- read_atomics(LMots).
-  
-  /* --------------------------------------------------------------------- */
+/* --------------------------------------------------------------------- */
 /*                                                                       */
 /*             Transform questions into a list of words                  */
 /*                                                                       */
@@ -44,9 +43,9 @@ read_lc_string_aux(-1,[]) :- !.  % end of file
 read_lc_string_aux(LChar,[LChar|Rest]) :- read_lc_string(Rest).
    
 
-  /*****************************************************************************/
-  % clean_string(+String,-Cleanstring)
-  %  removes all punctuation characters from String and return Cleanstring
+/*****************************************************************************/
+% clean_string(+String,-Cleanstring)
+%  removes all punctuation characters from String and return Cleanstring
   
 clean_string([C|Chars],L) :-
     my_char_type(C,punctuation),
@@ -90,9 +89,7 @@ lower_case(X,Y) :-
 lower_case(X,X).
 
 
-  % Pour bot en ligne
-  
-  
+% Pour bot en ligne
 /*****************************************************************************/
   % my_char_type(+Char,?Type)
   %    Char is an ASCII code.
