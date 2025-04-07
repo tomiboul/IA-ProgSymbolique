@@ -1,0 +1,65 @@
+body {
+  padding: 40px;
+}
+
+#board {
+    width: 60vh;
+    height: 60vh;
+    max-width: 650px;
+    max-height: 650px;
+
+    display: grid;
+    grid-template-columns: repeat(5, 2fr 1fr) 2fr; /* 6 cases + 5 ponts horizontaux = 11 */
+    grid-template-rows: repeat(5, 2fr 1fr) 2fr;    /* idem pour les lignes */
+    gap: 0;
+
+    justify-self: center;
+  }
+
+  .cell {
+    background-color: #4CAF50;
+    border: 3px solid #333;
+  }
+
+.h-bridge-container {
+    /* background-color: lightblue; */
+    margin: auto;
+    height: 40%;
+    width: 100%;
+    /* border-top:    solid 1px cyan;
+    border-bottom: solid 1px cyan; */
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image: url(../images/horizontal_bridge.png);
+    background-position: center;
+    background-size: cover;
+  }
+
+.v-bridge-container {
+    /* background-color: lightcoral; */
+    margin: auto;
+    height: 100%;
+    width: 40%;
+    /* border-left:    solid 1px orangered;
+    border-right:   solid 1px orangered; */
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image: url(../images/vertical_bridge.png);
+    background-position: center;
+    background-size: cover;
+  }
+
+.h-bridge {
+  width: 100%;
+}
+
+
+.v-bridge {
+  width: 100%;
+  object-fit: cover;
+  transform: rotate(90deg);
+}
