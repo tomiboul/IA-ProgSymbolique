@@ -3,10 +3,10 @@ body {
 }
 
 #board {
-    width: 60vh;
-    height: 60vh;
-    max-width: 650px;
-    max-height: 650px;
+    width: 70vh;
+    height: 70vh;
+    max-width: 800px;
+    max-height: 800px;
 
     display: grid;
     grid-template-columns: repeat(5, 2fr 1fr) 2fr; /* 6 cases + 5 ponts horizontaux = 11 */
