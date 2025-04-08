@@ -3,10 +3,8 @@ body {
 }
 
 #board {
-    width: 70vh;
+    width:  70vh;
     height: 70vh;
-    max-width: 800px;
-    max-height: 800px;
 
     display: grid;
     grid-template-columns: repeat(5, 2fr 1fr) 2fr; /* 6 cases + 5 ponts horizontaux = 11 */
@@ -22,7 +20,6 @@ body {
   }
 
 .h-bridge-container {
-    /* background-color: lightblue; */
     margin: auto;
     height: 40%;
     width: 100%;
@@ -32,13 +29,12 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-image: url(../images/horizontal_bridge.png);
+    background-image: url(./images/horizontal_bridge.png) !important;
     background-position: center;
     background-size: cover;
   }
 
 .v-bridge-container {
-    /* background-color: lightcoral; */
     margin: auto;
     height: 100%;
     width: 40%;
@@ -48,7 +44,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-image: url(../images/vertical_bridge.png);
+    background-image: url(./images/vertical_bridge.png) !important;
     background-position: center;
     background-size: cover;
   }
