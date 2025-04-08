@@ -53,4 +53,3 @@ document.addEventListener('DOMContentLoaded', (e) => {
   })
   log("OnLoad", "Add event listeners")
 })
-
