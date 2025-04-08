@@ -32,7 +32,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-image: url(../images/horizontal_bridge.png);
+    background-image: url(/images/horizontal_bridge.png);
     background-position: center;
     background-size: cover;
   }
@@ -48,7 +48,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-image: url(../images/vertical_bridge.png);
+    background-image: url(/images/vertical_bridge.png);
     background-position: center;
     background-size: cover;
   }

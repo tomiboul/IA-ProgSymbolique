@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>SWI-Prolog echo websockets example</title>
+  <link rel="stylesheet" href="/app/css/bridge.css">
+  <link rel="stylesheet" href="/app/css/home.css">
+</head>
+<body>  
+  <div class = "titre" >
+    <h1>Pontu</h1>
+    <button id ='startgame'>Nouvelle partie</button>
+    <button id="show-image-button" onclick="spawn()">Show Image</button>
+  </div>
+  <div id="gameArea">
+    <img id="lutin_rouge" 
+         class="lutin" 
+         src="/images/lutin_rouge.png" 
+         style="display: none;">
+    <img id="lutin_vert" 
+         class="lutin" 
+         src="/images/lutin_vert.png" 
+         style="display: none;">
+    <img id="lutin_bleu" 
+         class="lutin"   
+         src="/images/lutin_bleu.png" 
+         style="display: none;">
+    <img id="lutin_jaune" 
+         class="lutin" 
+         src="/images/lutin_jaune.png" 
+         style="display: none;">
+      </div>
+    <script src="/app/js/game.js"></script>
+
+
+<div id="board"></div>
+
+
+<script charset="stylesheet" src="/app/js/bridge.js"></script>
+</body>
+</html>
