@@ -1,5 +1,5 @@
 :- use_module(library(assoc)).
-
+/*
 levenshtein(Str1, Str2, Distance) :-
     string_chars(Str1, L1),
     string_chars(Str2, L2),
@@ -54,4 +54,38 @@ fill_row(I, J, M, L1, L2, AssocIn, AssocOut) :-
     put_assoc((I,J), AssocIn, MinCost, A2),
     J2 is J + 1,
     fill_row(I, J2, M, L1, L2, A2, AssocOut).
+*/
+:- dynamic memo/3.
 
+% point d’entrée
+distance_levenshtein(S1, S2, D) :-
+    string_chars(S1, L1),
+    string_chars(S2, L2),
+    retractall(memo(_, _, _)),  % On efface les anciens mémos
+    levenshtein(L1, L2, D).
+
+% cas déjà mémorisé
+levenshtein(L1, L2, D) :-
+    memo(L1, L2, D), !.
+
+% cas de base
+levenshtein([], [], 0) :- !,
+    assertz(memo([], [], 0)).
+
+levenshtein([], L, D) :- !,
+    length(L, D),
+    assertz(memo([], L, D)).
+
+levenshtein(L, [], D) :- !,
+    length(L, D),
+    assertz(memo(L, [], D)).
+
+% cas récursif avec mémoïsation
+levenshtein([C1|R1], [C2|R2], D) :-
+    levenshtein(R1, [C2|R2], D1),     % Suppression
+    levenshtein([C1|R1], R2, D2),     % Insertion
+    levenshtein(R1, R2, D3),          % Substitution (ou rien)
+    ( C1 == C2 -> Cost = 0 ; Cost = 1 ),
+    Sub is D3 + Cost,
+    min_list([D1 + 1, D2 + 1, Sub], D),
+    assertz(memo([C1|R1], [C2|R2], D)).  % on enregistre le résultat
