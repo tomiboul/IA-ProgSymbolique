@@ -25,12 +25,6 @@ lev_list(A, [], Dist) :- length(A, Dist).
 lev_list([Head | TailA], [Head | TailB], Dist) :-
    lev_list(TailA, TailB, Dist).
 
-/* Sinon, on prend le minimum des trois opérations possibles, donc :
-Dist = min (
-lev(a-1, b)
-lev(a, b-1)
-lev(a-1, b-1)
-)*/
 
 lev_list([_ | T1], [_ | T2], Dist) :-
    lev_list(T1, [_ | T2], Dist1),  % Opération n°1: suppression dans A
