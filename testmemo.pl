@@ -57,12 +57,6 @@ lev_list([H1 | T1], [H2 | T2], Dist, Matrice_Levenshtein, Matrice_Levenshtein) :
     get_dict(Tuple_String, Matrice_Levenshtein, Value),
     Dist = Value.
 
-
-
-
-
-
-
  lev_list([H1 | T1], [H2 | T2], Dist, Matrice_Levenshtein, New_Matrice_Levenshtein) :-
     length([H1 | T1], LengthA),
     length([H2 | T2], LengthB), 
