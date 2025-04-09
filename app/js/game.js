@@ -8,6 +8,7 @@ const start = document.getElementById("startgame");
 
 start.addEventListener("click", function(){
     startgame = true;
+    console.log(tour);
     console.log("ok");
     tour = 0;
     const images = document.querySelectorAll('img'); 
@@ -17,27 +18,27 @@ start.addEventListener("click", function(){
   });
 
 //function to spawn an elf
-function spawn () {
-    const showImageButton = document.getElementById("show-image-button");
-    
-    let myImage;
-    if(startgame == true){
-        if (tour % 2 == 1) {
-            if (tour % 4 === 1) {
-                myImage = document.getElementById("lutin_vert");
-                console.log("vert")
 
-            }
-            else if (tour % 4 === 3) {
-                myImage = document.getElementById("lutin_jaune");
-                console.log("jaune")
-            }
-            showImageButton.addEventListener("click", () => {
-                myImage.style.display = "block";
-            });
-        }
-    }   
-    tour += 1;
+function spawn () {
+    if (startgame === true) {
+        let couleur = "";
+        if (tour % 4 === 0) couleur = "vert";
+        else if (tour % 4 === 1) couleur = "rouge";
+        else if (tour % 4 === 2) couleur = "jaune";
+        else if (tour % 4 === 3) couleur = "bleu";
+    
+
+        const lutin = document.createElement("img");
+        lutin.src = `/app/images/lutin_${couleur}.png`; 
+        lutin.alt = `Lutin ${couleur}`;
+        lutin.style.width = "100px";
+        lutin.style.margin = "10px";
+    
+
+        const container = document.getElementById("lutin-container");
+        container.appendChild(lutin);
+        console.log(tour);
+        tour ++;
+    }
 }
 
-document.getElementById("show-image-button").addEventListener("click", spawn);
