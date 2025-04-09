@@ -13,6 +13,10 @@
     <button id="show-image-button" onclick="spawn()">Show Image</button>
   </div>
   <div id="lutin-container" style="display: flex; flex-wrap: wrap;"></div>
+  <form id="position">
+    <input type="text" name="position" placeholder="Entrez une la coordonnée du lutin" pattern = "^\d+-\d+$" required>  
+    <input type="submit" value="Submit">
+  </form>
   
    
     <script src="/app/js/game.js"></script>
