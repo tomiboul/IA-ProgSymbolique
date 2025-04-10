@@ -73,3 +73,5 @@ echo(WebSocket) :-
 get_response(Message, Response) :-
   get_time(Time),
   Response = _{message:Message.message, time: Time}.
+
+
