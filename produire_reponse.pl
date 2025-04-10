@@ -19,7 +19,7 @@
 /*        cet enonce et ce squelette de solution !                       */
 /*                                                                       */
 /* --------------------------------------------------------------------- */
-
+/*
 produire_reponse([fin],L1) :-
     L1 = [merci, de, m, '\'', avoir, consulte], !.
  
@@ -28,7 +28,7 @@ produire_reponse(L,Rep) :-
     clause(regle_rep(M,_,Pattern,Rep),Body),
     match_pattern(Pattern,L), 
     call(Body), !.
- 
+ */
 produire_reponse(_, [Choix_aleatoire]) :-
     Choix_reponse =[
        " Je ne sais pas, je n ai actuellement pas encore la réponse.",
