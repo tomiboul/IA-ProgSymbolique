@@ -23,7 +23,7 @@ chat("Salut", "Salut, quoi de neuf ?").
 chat("Wesh", "Wesh bien ou quoi ?").
 chat("Ca va", "Wesh bien et toi ?").
 chat("Ok merci", "Avec plaisir de vous aider ! Si vous avez d autres questions n hesitez pas !").
-chat("Hola", "No habla español").
+%%chat("Hola", "No habla español").
 
 chat("C est quoi les règles", Rules) :- rules(Rules).
 chat("Explique moi les règles de pontu", Rules) :- rules(Rules).
@@ -92,7 +92,11 @@ best(Question_User, [(Dist, Question)|ResteListe], ResultQ, ResultDist):-
 /*                         BOUCLE PRINCIPALE                             */
 /*                                                                       */
 /* --------------------------------------------------------------------- */
-fin(L) :- member(fin,L).
+listeDeFin(["fin", "Fin", "Stop", "stop", "bye", "Bye"]).
+
+fin(Question_User) :-
+   listeDeFin(X),
+   member(Question_User,X).
 
 
 pontuXL :- 
@@ -100,14 +104,19 @@ pontuXL :-
    write('Bonjour, je suis PBot, le bot explicateur du jeu PontuXL.'), nl,
    write('En quoi puis-je vous etre utile ?'), 
    nl, nl, 
- 
+
    repeat,
       write('\nVous : '), ttyflush,
       read_line_to_string(user_input, Question_User),
-      reponse(Question_User, Result),
-      write('ChatBot : '), write(Result),
 
-   fin(Question_User), !.
+      (fin(Question_User) 
+      -> write('ChatBot : Bye ! '), nl, ! ;
+         reponse(Question_User, Result),
+         write('ChatBot : '), write(Result)
+      ),
+
+   fin(Question_User).
+
 
 
 /*
