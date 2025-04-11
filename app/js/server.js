@@ -1,0 +1,1 @@
+//utilisé pour mettre le code js du serveur mais comme l'import fonctionne pas c'est directement mis dans index.html le temps de résoudre les bugs

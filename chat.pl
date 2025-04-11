@@ -5,6 +5,8 @@
 :- use_module(produire_reponse,[produire_reponse/2]).
 :- use_module(levenshtein,[lev/3]).
 
+:- module(chat, [reponse/2]).
+
 rules('Les règles du jeu Pontu sont les suivantes : \n
    — le jeu sera joué par quatre joueurs (dont 2 IA), utilisant des lutins de couleur bleu, vert, rouge et jaune ;\n
    — les joueurs jouent tour à tour dans l’ordre suivant : d’abord les verts, puis les bleus, puis les jaunes puis les rouges ;\n

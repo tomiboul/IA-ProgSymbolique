@@ -16,6 +16,9 @@
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_files)).
 :- use_module(library(http/websocket)).
+:- use_module(chat).
+
+reponse(Query, 'reponse'). %code test pour envoyer au serveur la reponse
 
 % http_handler docs: http://www.swi-prolog.org/pldoc/man?predicate=http_handler/3
 % =http_handler(+Path, :Closure, +Options)=
@@ -53,6 +56,13 @@ stop_server(Port) :-
 
 default_port(3000).
 
+query_prolog(QueryString, Response) :-
+    term_to_atom(Term, QueryString), % On convertit la requête en terme Prolog
+    (   call(Term)   % On exécute la requête Prolog
+    ->  Response = "Requête réussie"
+    ;   Response = "Requête échouée"
+    ).
+
 %! echo(+WebSocket) is nondet.
 % This predicate is used to read in a message via websockets and echo it
 % back to the client
@@ -60,18 +70,18 @@ echo(WebSocket) :-
     ws_receive(WebSocket, Message, [format(json)]),
     ( Message.opcode == close
     -> true
-    ; get_response(Message.data, Response),
+    ; reponse(Message.data, Response),
       write("Response: "), writeln(Response),
       ws_send(WebSocket, json(Response)),
       echo(WebSocket)
     ).
+
 
 %! get_response(+Message, -Response) is det.
 % Pull the message content out of the JSON converted to a prolog dict
 % then add the current time, then pass it back up to be sent to the
 % client
 get_response(Message, Response) :-
-  get_time(Time),
-  Response = _{message:Message.message, time: Time}.
-
+  reponse(Message.message, Response), 
+  Response = _{message: Message.message, reponse: Response}.
 

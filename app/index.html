@@ -7,24 +7,80 @@
   <link rel="stylesheet" href="/app/css/home.css">
 </head>
 <body>  
-  <div class = "titre" >
+  <div class="titre">
     <h1>Pontu</h1>
-    <button id ='startgame'>Nouvelle partie</button>
-    <button id="show-image-button" onclick="spawn()">Show Image</button>
+    <button id="startgame">Nouvelle partie</button>
+    <p id="Tour"></p>
   </div>
   <div id="lutin-container" style="display: flex; flex-wrap: wrap;"></div>
+
   <form id="position">
-    <input type="text" name="position" placeholder="Entrez les coordonnées d'un lutin" pattern = "^\d+-\d+$" required>  
+    <input type="text" name="position" placeholder="Entrez les coordonnées d'un lutin" pattern="^\d+-\d+$" required>  
     <input type="submit" value="Submit">
   </form>
+
+
+  <form id="chatbot">
+    <input type="text" id="userMessage" name="chatbot" placeholder="Entrez vos questions" required>  
+    <input type="submit" id="sendMessage" value="Envoyer au chatbot">
+  </form>
+
+  <div id="messages" style="border: 1px solid #ccc; padding: 10px; max-height: 200px; overflow-y: auto;"></div>
+
+  <script src="/app/js/game.js"></script>
+  <script src="/app/js/game2.js"></script>
+
+  <script>
+    
+    const socket = new WebSocket('ws://localhost:3000/echo');
+    
+
+    socket.onopen = function(event) {
+          console.log("connexion ouverte");
+};
+
+    
+
+    function sendMessage(message) {
+    if (socket.readyState === WebSocket.OPEN) {
+
+      console.log("Message envoyé au serveur : ", message);
+        socket.send(JSON.stringify({ message: message }));
+      console.log('message envoyé');
+
+    } else {
+      console.error("La connexion WebSocket n'est pas ouverte !");
+    }
+  }
+
+  socket.onmessage = function (event) {
+    console.log("Réponse du serveur chatbot : ", event.data);
+
+    const response = JSON.parse(event.data);
+    console.log('reponse : ', response.message);
+  };
+
+
+
+    const startchatbot = document.getElementById("chatbot");
+  startchatbot.addEventListener("submit", function (e) {
+    e.preventDefault();
+    const usermessage = e.target.chatbot.value; 
+    if (usermessage.trim()) {
+
+      sendMessage(usermessage);
+      
+      e.target.chatbot.value = "";
+    }
+  });
+
+  socket.onclose = function(event) {
+            console.log("La connexion WebSocket a été fermée", event);
+};
   
-   
-    <script src="/app/js/game2.js"></script>
+  </script>
 
-
-<div id="board"></div>
-
-
-<script src="/app/js/board.js"></script>
+  <div id="board"></div>
+  <script src="/app/js/board.js"></script>
 </body>
 </html>

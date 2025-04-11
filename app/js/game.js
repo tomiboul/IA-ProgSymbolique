@@ -76,7 +76,8 @@ function spawn (position) {
           console.log(matrix);
         
         }
-
+        
+        document.getElementById("Tour").innerText = "Tour : " + tour;
         console.log(tour);
         
     }
