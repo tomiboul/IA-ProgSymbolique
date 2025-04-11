@@ -24,7 +24,6 @@ chat("Wesh", "Wesh bien ou quoi ?").
 chat("Ca va", "Wesh bien et toi ?").
 chat("Ok merci", "Avec plaisir de vous aider ! Si vous avez d autres questions n hesitez pas !").
 %%chat("Hola", "No habla español").
-
 chat("C est quoi les règles", Rules) :- rules(Rules).
 chat("Explique moi les règles de pontu", Rules) :- rules(Rules).
 chat("Règles de Pontu", Rules) :- rules(Rules).
@@ -36,6 +35,14 @@ chat("Comment joue-t-on à Pontu ?", Rules) :- rules(Rules).
 chat("Je veux jouer à pontu, explique les règles", Rules) :- rules(Rules).
 chat("Je voudrais jouer à pontu, explique moi les règles du jeu", Rules) :- rules(Rules).
 chat("Comment est-ce qu on joue à Pontu ?", Rules) :- rules(Rules).
+
+chat("Qui commence le jeu ? ", Par convention, c’est au joueur en charge des lutins verts de commencer la partie.").
+chat("Combien de lutins compte chaque equipe ?", "4 lutins par équipes").
+chat("Puis-je deplacer un lutin sur une case occupee par un autre lutin ?","Non, un seul lutin par case").
+chat("Combien de lutins compte chaque equipe ?", "4 lutins par équipes").
+chat("Quel pont puis-je retirer apres avoir deplace un lutin ?", "Il est permis de retirer le pont emprunte ou tout autre pont.").
+chat("Je joue pour les lutins verts. Quel lutin me conseillez-vous de deplacer et vers quelle case ?", "Je n ai pas encore la réponse car je suis pas encore assez intelligent").
+
 
 
 get_Question_BD(ResultList) :-
