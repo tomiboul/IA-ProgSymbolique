@@ -19,7 +19,7 @@ export const gameState = {
         return this.elves[this.currentPlayer];
     },
 
-    currentPhase: 'startingPhase',
+    currentPhase: 'placementPhase',
     deadPlayers: [],
 
     generateAllBridges(gridSize) {
@@ -58,7 +58,7 @@ export function newGameInit(state) {
     state.currentPlayerIndex = 0;
 
     // Init game phase 
-    state.currentPhase = 'startingPhase';
+    state.currentPhase = 'placementPhase';
             
     // Init bridges 
     state.bridges = state.generateAllBridges();
@@ -70,7 +70,7 @@ function playTurn(state){
             // Here, retrieve the coords of the selected cell
         })
 
-        if(state.currentPhase === 'startingPhase') {
+        if(state.currentPhase === 'placementPhase') {
         // check if currentPlayer doesn't already have an elf on that cell
 
         // if currentPlayer has an elf on that cell -> display message
@@ -150,19 +150,22 @@ function isElfBlocked(x, y, state) {
     return true; // No way out
 }
 
-function checkForWinner(state){
-
-}
-
 function checkIfGameFinished(state) {
-    if (state.deadPlayers.length >= state.playerOrder.length - 1) {
+    // Amount of players alive
+    const activePlayers = state.playerOrder.length - state.deadPlayers.length;
+    
+    if (activePlayers <= 1) {
         state.currentPhase = 'finished';
-        alert("Game over, GG to the winner");
-        return true
+        
+        // Find the winner
+        const winner = state.playerOrder.find(
+            (_, index) => !state.deadPlayers.includes(index)
+        );
+        
+        alert(`Game over! Winner: ${winner}`);
+        return true;
     }
-    else {
-        return false
-    }
+    return false;
 }
 
 function updateBoardDisplay(state) {
@@ -177,7 +180,6 @@ async function pontuXL(state, playersOrder) {
     while(state.currentPhase !== 'finished') {
         await playTurn(state);
         checkForLoser(state);
-        checkForWinner(state);
         checkIfGameFinished(state);
         setNextTurn(state);
         updateBoardDisplay(state);
