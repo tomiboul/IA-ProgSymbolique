@@ -1,5 +1,6 @@
 export const gameState = {
     elves: {
+        // each elf is represented by its coord (x,y)
         green: [],
         blue: [],
         yellow: [],
@@ -44,6 +45,7 @@ export const gameState = {
 // const playersOrder = [green,blue,yellow,red];
 const playersOrder = [state.elves.green, state.elves.blue, state.elves.yellow, state.elves.red];
 
+const board = document.getElementById("board");
 
 export function newGameInit(state) {
     // Init state
@@ -63,28 +65,89 @@ export function newGameInit(state) {
 }
 
 function playTurn(state){
-    if(state.currentPhase === 'startingPhase') {
-        // wait for user click on a cell
-        // check if 
+        // wait for user to click on a cell
+        board.addEventListener("click", () => {
+            // Here, retrieve the coords of the selected cell
+        })
+
+        if(state.currentPhase === 'startingPhase') {
+        // check if currentPlayer doesn't already have an elf on that cell
+
+        // if currentPlayer has an elf on that cell -> display message
+
+        // if another player has an elf on that cell -> display a different message
+
+        // if no elf on that cell -> display some positive feeback (green border/...)
     }
 
     else if(state.currentPhase === 'playingPhase') {
-
+        
     }
 }
 
-function setNextTurn(state) {
-    // Find next player's index, skipping dead players
-    nextId = (state.currentPlayerIndex + 1) % 3;
-    while (state.deadPlayers.includes(nextId)){
-        nextId = (NextId + 1) % 3
+function checkForLoser(state) {
+    const currentColor = state.playerOrder[state.currentPlayerIndex];
+    const currentElves = state.elves[currentColor];
+
+    // If player already eliminated -> ignore
+    if (state.deadPlayers.includes(state.currentPlayerIndex)) {
+        return;
     }
-    // Update currentPlayerIndex
-    state.currentPlayerIndex = nextId;
+
+    // Check if ALL this player's elves are blocked 
+    const allBlocked = currentElves.every(([x, y]) => isElfBlocked(x, y, state));
+
+    // if ALL blocked -> add this player to deadPlayers
+    if (allBlocked) {
+        state.deadPlayers.push(state.currentPlayerIndex);
+        console.log(`Player ${currentColor} eliminated (all elves blocked!)`);
+        // *Display a list of dead players
+    }
 }
 
-function checkForLoser(state){
+function isElfBlocked(x, y, state) {
+    // All four directions :
+    const directions = [
+        {dx: 0, dy: 1}, 
+        {dx: 1, dy: 0},  
+        {dx: 0, dy: -1}, 
+        {dx: -1, dy: 0}  
+    ];
 
+    for (const dir of directions) {
+        const newX = x + dir.dx;
+        const newY = y + dir.dy;
+
+        // For each direction, check if destination is within the board
+        // If not, pass this direction and go to the next one
+        if (newX < 0 || newX >= 6 || newY < 0 || newY >= 6) {
+            continue;
+        }
+
+        // Check if there is a bridge to get there
+        let hasBridge = false;
+        // *Function to find bridges aroud
+        
+        if (!hasBridge) continue;
+
+        // Check if cell is free
+        let cellFree = true;
+        for (const color in state.elves) {
+            for (const [ex, ey] of state.elves[color]) {
+                if (ex === newX && ey === newY) {
+                    cellFree = false;
+                    break;
+                }
+            }
+            if (!cellFree) break;
+        }
+
+        if (cellFree) {
+            return false; // At least one possible way out -> elf not blocked
+        }
+    }
+
+    return true; // No way out
 }
 
 function checkForWinner(state){
@@ -94,19 +157,30 @@ function checkForWinner(state){
 function checkIfGameFinished(state) {
     if (state.deadPlayers.length >= state.playerOrder.length - 1) {
         state.currentPhase = 'finished';
-    };
-
-    alert("Game over, GG to the winner");
+        alert("Game over, GG to the winner");
+        return true
+    }
+    else {
+        return false
+    }
 }
 
-function pontuXL(state, playersOrder) {
+function updateBoardDisplay(state) {
+
+}
+
+async function pontuXL(state, playersOrder) {
     // Init a new game
     newGameInit(state); 
     
     // Main loop
     while(state.currentPhase !== 'finished') {
-        playTurn(state);
+        await playTurn(state);
+        checkForLoser(state);
+        checkForWinner(state);
+        checkIfGameFinished(state);
         setNextTurn(state);
+        updateBoardDisplay(state);
     }
     
     // When the game is over : 
@@ -125,7 +199,4 @@ start.addEventListener("click", () => {
     
     // Launch a new game
     pontuXL(gameState);
-
-    // Réactive le bouton dans tous les cas (même en cas d'erreur)
-    start.disabled = false;
 });
