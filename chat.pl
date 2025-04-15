@@ -1,3 +1,4 @@
+:- module(chat, [reponse/2]).
 :- use_module(library(isub)).
 :- use_module(library(readutil)).
 :- use_module(lire_question,[lire_question/1]).
@@ -5,7 +6,6 @@
 :- use_module(produire_reponse,[produire_reponse/2]).
 :- use_module(levenshtein,[lev/3]).
 
-:- module(chat, [reponse/2]).
 
 rules('Les règles du jeu Pontu sont les suivantes : \n
    — le jeu sera joué par quatre joueurs (dont 2 IA), utilisant des lutins de couleur bleu, vert, rouge et jaune ;\n
@@ -38,7 +38,7 @@ chat("Je veux jouer à pontu, explique les règles", Rules) :- rules(Rules).
 chat("Je voudrais jouer à pontu, explique moi les règles du jeu", Rules) :- rules(Rules).
 chat("Comment est-ce qu on joue à Pontu ?", Rules) :- rules(Rules).
 
-chat("Qui commence le jeu ? ", Par convention, c’est au joueur en charge des lutins verts de commencer la partie.").
+chat("Qui commence le jeu ? ", "Par convention, c’est au joueur en charge des lutins verts de commencer la partie.").
 chat("Combien de lutins compte chaque equipe ?", "4 lutins par équipes").
 chat("Puis-je deplacer un lutin sur une case occupee par un autre lutin ?","Non, un seul lutin par case").
 chat("Combien de lutins compte chaque equipe ?", "4 lutins par équipes").

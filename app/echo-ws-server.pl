@@ -16,9 +16,9 @@
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_files)).
 :- use_module(library(http/websocket)).
-:- use_module(chat).
+:- use_module('../chat', [reponse/2]).
 
-reponse(Query, 'reponse'). %code test pour envoyer au serveur la reponse
+%reponse(Query, 'reponse'). %code test pour envoyer au serveur la reponse
 
 % http_handler docs: http://www.swi-prolog.org/pldoc/man?predicate=http_handler/3
 % =http_handler(+Path, :Closure, +Options)=
@@ -32,6 +32,7 @@ reponse(Query, 'reponse'). %code test pour envoyer au serveur la reponse
 :- http_handler(root(.),
                 http_reply_from_files('.', []),
                 [prefix]).
+
 % * root(echo) indicates we're matching the echo path on the URL e.g.
 %   localhost:3000/echo of the server
 % * We create a closure using =http_upgrade_to_websocket=
@@ -56,6 +57,7 @@ stop_server(Port) :-
 
 default_port(3000).
 
+%gpt 
 query_prolog(QueryString, Response) :-
     term_to_atom(Term, QueryString), % On convertit la requête en terme Prolog
     (   call(Term)   % On exécute la requête Prolog
@@ -68,9 +70,12 @@ query_prolog(QueryString, Response) :-
 % back to the client
 echo(WebSocket) :-
     ws_receive(WebSocket, Message, [format(json)]),
+    writeln(received(Message)),
     ( Message.opcode == close
     -> true
-    ; reponse(Message.data, Response),
+    ; Message.data = Dict,
+      Dict.get(message) = UserMessage,
+      reponse(UserMessage, Response),
       write("Response: "), writeln(Response),
       ws_send(WebSocket, json(Response)),
       echo(WebSocket)
