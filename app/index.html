@@ -2,9 +2,10 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>SWI-Prolog echo websockets example</title>
-  <link rel="stylesheet" href="/app/css/bridge.css">
-  <link rel="stylesheet" href="/app/css/home.css">
+  <title>Pontu</title>
+  <link rel="stylesheet" href="/css/bridge.css">
+  <link rel="stylesheet" href="/css/home.css">
+  <link rel="stylesheet" href="/css/chatbot.css">
 </head>
 <body>  
   <div class="titre">
@@ -18,8 +19,6 @@
     <input type="text" name="position" placeholder="Entrez les coordonnées d'un lutin" pattern="^\d+-\d+$" required>  
     <input type="submit" value="Submit">
   </form>
-
-
   <form id="chatbot">
     <input type="text" id="userMessage" name="chatbot" placeholder="Entrez vos questions" required>  
     <input type="submit" id="sendMessage" value="Envoyer au chatbot">
@@ -27,8 +26,9 @@
 
   <div id="messages" style="border: 1px solid #ccc; padding: 10px; max-height: 200px; overflow-y: auto;"></div>
 
-  <script src="/app/js/game.js"></script>
-  <script src="/app/js/game2.js"></script>
+  <script src="/js/game.js"></script>
+  <script src="/js/game2.js"></script>
+  <script src="/js/chatbot.js"></script>
 
   <script>
     
