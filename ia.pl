@@ -6,3 +6,4 @@ ia:-
     %% d´eplac´es par une intelligence artificielle
     ajoutLutin((bleu, 2,3),[], X),
     writeln(X).
+

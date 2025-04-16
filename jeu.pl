@@ -52,15 +52,15 @@ deplaceLutin((Couleur, X, Y), (Couleur, NewX, NewY), ListeLutin, NewListeLutin):
     NewX >= 1,
     NewY =< 6,
     NewY >= 1,
-    member((_, X, Y), ListeLutin),
+    member((Couleur, X, Y), ListeLutin),
     not(member((Couleur, NewX, NewY), ListeLutin)),
     suppLutin((Couleur, X, Y), ListeDist, TempNewListeLutin),
     NewListeLutin = [(Couleur, NewX, NewY)|TempNewListeLutin].
 
-
-suppLutin((_, X, Y), ListeLutin, NewListeLutin):-
-    member((_, X, Y), ListeLutin),
-    delete(ListeLutin, (_, X, Y), NewListeLutin).
+/* ATTENTION ne pas remettre le '_' à la palce de Couleur car "nécéssaire" dans fichier situation.pl */
+suppLutin((Couleur, X, Y), ListeLutin, NewListeLutin):-
+    member((Couleur, X, Y), ListeLutin),
+    delete(ListeLutin, (Couleur, X, Y), NewListeLutin).
     
 
 /*################# Fonction ponts ##################*/
