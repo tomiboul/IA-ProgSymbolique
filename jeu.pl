@@ -1,4 +1,4 @@
-:- module(jeu).
+:- module(jeu, [ajoutLutin/3]).
 
 
 /*################## Les couleurs ####################*/
@@ -41,12 +41,27 @@ ajoutLutin((Couleur, X, Y), ListeLutin, NewListeLutin):-
     not(member((_, X,Y), ListeLutin)), %% on va vérifier qu il n existe pas deja de lutin a cette position
     NewListeLutin = [(Couleur, X, Y)|ListeLutin].
 
+deplaceLutin((Couleur, X, Y), (Couleur, NewX, NewY), ListeLutin, NewListeLutin):-
+    number(X),
+    number(Y),
+    X =< 6,
+    X >= 1,
+    Y =< 6,
+    Y >= 1,
+    NewX =< 6,
+    NewX >= 1,
+    NewY =< 6,
+    NewY >= 1,
+    member((_, X, Y), ListeLutin),
+    not(member((Couleur, NewX, NewY), ListeLutin)),
+    suppLutin((Couleur, X, Y), ListeDist, TempNewListeLutin),
+    NewListeLutin = [(Couleur, NewX, NewY)|TempNewListeLutin].
+
 
 suppLutin((_, X, Y), ListeLutin, NewListeLutin):-
     member((_, X, Y), ListeLutin),
     delete(ListeLutin, (_, X, Y), NewListeLutin).
     
-
 
 /*################# Fonction ponts ##################*/
 deplacePont(((X1, Y1)-(X2,Y2)), ((NewX1, NewY1)-(NewX2,NewY2)), ListePont, NewListePont):- 
@@ -80,7 +95,7 @@ deplacePont(((X1, Y1)-(X2,Y2)), ((NewX1, NewY1)-(NewX2,NewY2)), ListePont, NewLi
      (X1 = NewX1, (Y1 is NewY1 + 1 ; Y1 is NewY1 - 1), X2 = NewX2, Y2 = NewY2) ;
      ((X1 is NewX1 + 1 ; X1 is NewX1 - 1), Y1 = NewY1, X2 = NewX2,  Y2 = NewY2) 
     ),
-    
+
     not(member(((NewX1, NewY1)-(NewX2,NewY2)), ListePont)), %% on va vérifier qu il n existe pas deja de pont a cette position
     suppPont(((X1, Y1)-(X2,Y2)), ListePont, TempNewListePont),
     NewListePont = [((NewX1, NewY1)-(NewX2,NewY2))|TempNewListePont].
