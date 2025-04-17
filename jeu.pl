@@ -89,13 +89,24 @@ deplacePont(((X1, Y1)-(X2,Y2)), ((NewX1, NewY1)-(NewX2,NewY2)), ListePont, NewLi
     NewY2 >= 1,
     member(((X1, Y1)-(X2,Y2)), ListePont),
     
-    ( %% On vérifie que le déplacement demander soit correcte ( rotation de 90° la case) 
+    /*( %% On vérifie que le déplacement demander soit correcte ( rotation de 90° la case) 
      (X1 = NewX1, Y1 = NewY1, X2 = NewX2, (Y2 is NewY2 + 1 ; Y2 is NewY2 - 1)) ;
      (X1 = NewX1, Y1 = NewY1, (X2 is NewX2 + 1 ;X2 is NewX2 - 1 ), Y2 = NewY2) ;
      (X1 = NewX1, (Y1 is NewY1 + 1 ; Y1 is NewY1 - 1), X2 = NewX2, Y2 = NewY2) ;
      ((X1 is NewX1 + 1 ; X1 is NewX1 - 1), Y1 = NewY1, X2 = NewX2,  Y2 = NewY2) 
-    ),
+    ),*/
 
+    (( /* Rotation autour de X1,Y1*/
+        (X1 = NewX1, Y1 = NewY1), ((X2 is NewX2 - 1), (Y2 is NewY2 -1 ;  Y2 is NewY2 +1));
+        (X1 = NewX1, Y1 = NewY1), ((Y2 is NewY2 - 1), (X2 is NewX2 -1 ;  X2 is NewX2 +1));
+        (X1 = NewX1, Y1 = NewY1), ((Y2 is NewY2 + 1), (X2 is NewX2 -1 ;  X2 is NewX2 +1));
+        (X1 = NewX1, Y1 = NewY1), ((X2 is NewX2 + 1), (Y2 is NewY2 -1 ;  Y2 is NewY2 +1))
+    );( /* Rotation autour de X2,Y2*/
+        (X2 = NewX2, Y2 = NewY2), ((X1 is NewX1 - 1), (Y1 is NewY1 -1 ;  Y1 is NewY1 +1));
+        (X2 = NewX2, Y2 = NewY2), ((Y1 is NewY1 - 1), (X1 is NewX1 -1 ;  X1 is NewX1 +1));
+        (X2 = NewX2, Y2 = NewY2), ((Y1 is NewY1 + 1), (X1 is NewX1 -1 ;  X1 is NewX1 +1));
+        (X2 = NewX2, Y2 = NewY2), ((X1 is NewX1 + 1), (Y1 is NewY1 -1 ;  Y1 is NewY1 +1))
+    )),
     not(member(((NewX1, NewY1)-(NewX2,NewY2)), ListePont)), %% on va vérifier qu il n existe pas deja de pont a cette position
     suppPont(((X1, Y1)-(X2,Y2)), ListePont, TempNewListePont),
     NewListePont = [((NewX1, NewY1)-(NewX2,NewY2))|TempNewListePont].
