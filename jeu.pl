@@ -79,10 +79,8 @@ deplacePont(((X1, Y1)-(X2,Y2)), ((NewX1, NewY1)-(NewX2,NewY2)), ListePont, NewLi
     Y2 =< 6,
     Y2 >= 1,
 
-
     member(((X1, Y1)-(X2,Y2)), ListePont),
     
-
     %% Rotation de 90° du pont horizontal vers vertical (avec du coup les 4 possibilités)
     (Y1 = Y2 ->((NewX1 = X1, NewY1 is Y1 - 1, NewX2 = X1, NewY2 = Y1) ; 
                 (NewX1 = X1, NewY1 = Y1, NewX2 = X1, NewY2 is Y1 + 1) ; 
@@ -106,7 +104,7 @@ deplacePont(((X1, Y1)-(X2,Y2)), ((NewX1, NewY1)-(NewX2,NewY2)), ListePont, NewLi
 
     not(member(((NewX1, NewY1)-(NewX2,NewY2)), ListePont)), %% on va vérifier qu il n existe pas deja de pont a cette position
     suppPont(((X1, Y1)-(X2,Y2)), ListePont, TempNewListePont),
-    NewListePont = [((NewX1, NewY1)-(NewX2,NewY2))|TempNewListePont], write("\n").
+    NewListePont = [((NewX1, NewY1)-(NewX2,NewY2))|TempNewListePont].
     
 
 
