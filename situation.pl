@@ -1,6 +1,6 @@
 %%:- module(situation, [ajoutLutin/3]).
 %% etat(ListeLutin, ListePont, OrdreJeu)
-%% :- use_module(jeu, [suppLutin/3]).
+:- use_module(jeu, [ajoutLutin/3, deplaceLutin/4, suppLutin/3 , deplacePont/4, suppPont/3]).
 
 eliminationJoueur((ListeLutin, ListePont, OrdreJeu), (Couleur, _, _), (NewListeLutin, ListePont, NewOrdreJeu)):-
     findall((Couleur, PositionX, PositionY), member((Couleur, _, _), ListeLutin), ListeLutinCouleur), 
@@ -44,3 +44,30 @@ suppAllLutin((Couleur, _, _), [(CouleurLutin, X, Y)|Reste], [(CouleurLutin, X, Y
 */
 suppLutinOrdrejeu((Couleur, _, _), OrdreJeu, NewOrdreJeu):-
     delete(Couleur, OrdreJeu, NewOrdreJeu).
+
+infini(100000000000).
+negative_infini(100000000000).
+
+/*
+    Prédicat pour le tour de jeu après la phase de placement
+    à utiliser dans le prédicat IA
+*/
+min_max((ListeLutin, ListePont, OrdreJeu), 0, BooleanMaxTurn, ValueMinMax, (NewListeLutin, NewListePont, NewOrdreJeu)).
+
+
+/**
+ * Reste aucun lutins adverses
+*/
+%%min_max((ListeLutin, ListePont, OrdreJeu), Depth, BooleanMaxTurn, (NewListeLutin, NewListePont, NewOrdreJeu)):-
+
+
+fct_max(Value, (ListeLutin, ListePont, OrdreJeu), Depth, BooleanMaxTurn, (NewListeLutin, NewListePont, NewOrdreJeu), Result ):-
+    ReduceDepth is Depth - 1,
+    min_max((ListeLutin, ListePont, OrdreJeu), ReduceDepth, BooleanMaxTurn, ValueMinMax, (NewListeLutin, NewListePont, NewOrdreJeu)),
+    ( Value =< ValueMinMax -> Result is ValueMinMax ; Result is Value).
+
+fct_min(Value, (ListeLutin, ListePont, OrdreJeu), Depth, BooleanMaxTurn, (NewListeLutin, NewListePont, NewOrdreJeu), Result ):-
+    ReduceDepth is Depth - 1,
+    min_max((ListeLutin, ListePont, OrdreJeu), ReduceDepth, BooleanMaxTurn, ValueMinMax, (NewListeLutin, NewListePont, NewOrdreJeu)),
+    ( Value =< ValueMinMax -> Result is Value ; Result is ValueMinMax).
+

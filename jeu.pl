@@ -1,4 +1,4 @@
-%% :- module(jeu, [ajoutLutin/3]).
+:- module(jeu, [ajoutLutin/3, deplaceLutin/4, suppLutin/3 , deplacePont/4, suppPont/3]).
 
 
 /*################## Les couleurs ####################*/
