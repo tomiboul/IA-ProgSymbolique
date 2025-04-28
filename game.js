@@ -57,7 +57,7 @@ function spawn (position) {
     
 
         const lutin = document.createElement("img");
-        lutin.src = `/app/images/lutin_${couleur}.png`; 
+        lutin.src = `images/lutin_${couleur}.png`; 
         lutin.alt = `Lutin ${couleur}`;
         lutin.className = "lutin";
 
