@@ -1,206 +1,364 @@
 export const gameState = {
-  elves: {
-    // each elf is represented by its coord (x,y)
-    green: [],
-    blue: [],
-    yellow: [],
-    red: [],
-  },
+    elves: {
+        // each elf is represented by its coord (x,y)
+        green: [],
+        blue: [],
+        yellow: [],
+        red: []
+    },
 
-  bridges: [],
-  currentPlayerIndex: 0,
-  playerOrder: ["green", "blue", "yellow", "red"],
+    bridges: [],
+    currentPlayerIndex: 0,
+    playerOrder: ['green', 'blue', 'yellow', 'red'],
 
-  get currentPlayer() {
-    return this.playerOrder[this.currentPlayerIndex];
-  },
+    get currentPlayer() {
+        return this.playerOrder[this.currentPlayerIndex];
+    },
 
-  get currentPlayerElves() {
-    return this.elves[this.currentPlayer];
-  },
+    get currentPlayerElves() {
+        return this.elves[this.currentPlayer];
+    },
 
-  currentPhase: "placementPhase",
-  deadPlayers: [],
+    currentPhase: 'placementPhase',
+    deadPlayers: [],
 
-  generateAllBridges(gridSize) {
-    const bridges = [];
-
-    // Ponts horizontaux, seul x varie
-    for (let y = 0; y < gridSize; y++) {
-      for (let x = 0; x < gridSize - 1; x++) {
-        bridges.push([[x, y, x + 1, y]]); // (x,y) < (x+1,y)
-      }
+    generateAllBridges(gridSize) {
+        const bridges = [];
+        
+        // Ponts horizontaux, seul x varie
+        for (let y = 0; y < gridSize; y++) {
+            for (let x = 0; x < gridSize - 1; x++) {
+                bridges.push([ [x, y , x + 1, y] ]); // (x,y) < (x+1,y)
+            }
+        }
+        
+        // Ponts verticaux seul y varie
+        for (let x = 0; x < gridSize; x++) {
+            for (let y = 0; y < gridSize - 1; y++) {
+                bridges.push([ [x, y, x, y + 1] ]); // (x,y) < (x,y+1)
+            }
+        }
+        return bridges;
     }
-
-    // Ponts verticaux seul y varie
-    for (let x = 0; x < gridSize; x++) {
-      for (let y = 0; y < gridSize - 1; y++) {
-        bridges.push([[x, y, x, y + 1]]); // (x,y) < (x,y+1)
-      }
-    }
-    return bridges;
-  },
-};
+}
 
 // const playersOrder = [green,blue,yellow,red];
-const playersOrder = [
-  state.elves.green,
-  state.elves.blue,
-  state.elves.yellow,
-  state.elves.red,
-];
+const playersOrder = [state.elves.green, state.elves.blue, state.elves.yellow, state.elves.red];
 
 const board = document.getElementById("board");
 
 export function newGameInit(state) {
-  // Init state
-  state.elves.green = [];
-  state.elves.blue = [];
-  state.elves.yellow = [];
-  state.elves.red = [];
+    // Init state
+    state.elves.green  = [];
+    state.elves.blue   = [];
+    state.elves.yellow = [];
+    state.elves.red    = [];
 
-  // Init first player
-  state.currentPlayerIndex = 0;
+    // Init first player
+    state.currentPlayerIndex = 0;
 
-  // Init game phase
-  state.currentPhase = "placementPhase";
-
-  // Init bridges
-  state.bridges = state.generateAllBridges();
+    // Init game phase 
+    state.currentPhase = 'placementPhase';
+            
+    // Init bridges 
+    state.bridges = state.generateAllBridges();
 }
 
-function playTurn(state) {
-  // wait for user to click on a cell
-  board.addEventListener("click", () => {
-    // Here, retrieve the coords of the selected cell
-  });
+function handlePlacementTurn(state){
+    return null;
+}
 
-  if (state.currentPhase === "placementPhase") {
-    // check if currentPlayer doesn't already have an elf on that cell
-    // if currentPlayer has an elf on that cell -> display message
-    // if another player has an elf on that cell -> display a different message
-    // if no elf on that cell -> display some positive feeback (green border/...)
-  } else if (state.currentPhase === "playingPhase") {
-  }
+
+function handlePlayingTurn(state) {
+    return null;
+}
+
+function playTurn(state){
+        // wait for user to click on a cell
+        board.addEventListener("click", () => {
+            // Here, retrieve the coords of the selected cell
+        })
+
+        if(state.currentPhase === 'placementPhase') {
+        // check if currentPlayer doesn't already have an elf on that cell
+
+        // if currentPlayer has an elf on that cell -> display message
+
+        // if another player has an elf on that cell -> display a different message
+
+        // if no elf on that cell -> display some positive feeback (green border/...)
+    }
+
+    else if(state.currentPhase === 'playingPhase') {
+        
+    }
 }
 
 function checkForLoser(state) {
-  const currentColor = state.playerOrder[state.currentPlayerIndex];
-  const currentElves = state.elves[currentColor];
+    const currentColor = state.playerOrder[state.currentPlayerIndex];
+    const currentElves = state.elves[currentColor];
 
-  // If player already eliminated -> ignore
-  if (state.deadPlayers.includes(state.currentPlayerIndex)) {
-    return;
-  }
+    // If player already eliminated -> ignore
+    if (state.deadPlayers.includes(state.currentPlayerIndex)) {
+        return;
+    }
 
-  // Check if ALL this player's elves are blocked
-  const allBlocked = currentElves.every(([x, y]) => isElfBlocked(x, y, state));
+    // Check if ALL this player's elves are blocked 
+    const allBlocked = currentElves.every(([x, y]) => isElfBlocked(x, y, state));
 
-  // if ALL blocked -> add this player to deadPlayers
-  if (allBlocked) {
-    state.deadPlayers.push(state.currentPlayerIndex);
-    console.log(`Player ${currentColor} eliminated (all elves blocked!)`);
-    // *Display a list of dead players
-  }
+    // if ALL blocked -> add this player to deadPlayers
+    if (allBlocked) {
+        state.deadPlayers.push(state.currentPlayerIndex);
+        console.log(`Player ${currentColor} eliminated (all elves blocked!)`);
+        // *Display a list of dead players
+    }
 }
 
 function isElfBlocked(x, y, state) {
-  // All four directions :
-  const directions = [
-    { dx: 0, dy: 1 },
-    { dx: 1, dy: 0 },
-    { dx: 0, dy: -1 },
-    { dx: -1, dy: 0 },
-  ];
+    // All four directions :
+    const directions = [
+        {dx: 0, dy: 1}, 
+        {dx: 1, dy: 0},  
+        {dx: 0, dy: -1}, 
+        {dx: -1, dy: 0}  
+    ];
 
-  for (const dir of directions) {
-    const newX = x + dir.dx;
-    const newY = y + dir.dy;
+    for (const dir of directions) {
+        const newX = x + dir.dx;
+        const newY = y + dir.dy;
 
-    // For each direction, check if destination is within the board
-    // If not, pass this direction and go to the next one
-    if (newX < 0 || newX >= 6 || newY < 0 || newY >= 6) {
-      continue;
-    }
-
-    // Check if there is a bridge to get there
-    let hasBridge = false;
-    // *Function to find bridges aroud
-
-    if (!hasBridge) continue;
-
-    // Check if cell is free
-    let cellFree = true;
-    for (const color in state.elves) {
-      for (const [ex, ey] of state.elves[color]) {
-        if (ex === newX && ey === newY) {
-          cellFree = false;
-          break;
+        // For each direction, check if destination is within the board
+        // If not, pass this direction and go to the next one
+        if (newX < 0 || newX >= 6 || newY < 0 || newY >= 6) {
+            continue;
         }
-      }
-      if (!cellFree) break;
+
+        // Check if there is a bridge to get there
+        let hasBridge = false;
+        // *Function to find bridges aroud
+        
+        if (!hasBridge) continue;
+
+        // Check if cell is free
+        let cellFree = true;
+        for (const color in state.elves) {
+            for (const [ex, ey] of state.elves[color]) {
+                if (ex === newX && ey === newY) {
+                    cellFree = false;
+                    break;
+                }
+            }
+            if (!cellFree) break;
+        }
+
+        if (cellFree) {
+            return false; // At least one possible way out -> elf not blocked
+        }
     }
 
-    if (cellFree) {
-      return false; // At least one possible way out -> elf not blocked
-    }
-  }
-
-  return true; // No way out
+    return true; // No way out
 }
 
 function checkIfGameFinished(state) {
-  // Amount of players alive
-  const activePlayers = state.playerOrder.length - state.deadPlayers.length;
-
-  if (activePlayers <= 1) {
-    state.currentPhase = "finished";
-
-    // Find the winner
-    const winner = state.playerOrder.find(
-      (_, index) => !state.deadPlayers.includes(index)
-    );
-
-    alert(`Game over! Winner: ${winner}`);
-    return true;
-  }
-  return false;
+    // Amount of players alive
+    const activePlayers = state.playerOrder.length - state.deadPlayers.length;
+    
+    if (activePlayers <= 1) {
+        state.currentPhase = 'finished';
+        
+        // Find the winner
+        const winner = state.playerOrder.find(
+            (_, index) => !state.deadPlayers.includes(index)
+        );
+        
+        alert(`Game over! Winner: ${winner}`);
+        return true;
+    }
+    return false;
 }
 
-function updateBoardDisplay(state) {}
+function updateBoardDisplay(state) {
+
+}
 
 async function pontuXL(state, playersOrder) {
-  // Init a new game
-  newGameInit(state);
-
-  // Main loop
-  while (state.currentPhase !== "finished") {
-    await playTurn(state);
-    checkForLoser(state);
-    checkIfGameFinished(state);
-    setNextTurn(state);
-    updateBoardDisplay(state);
-  }
-
-  // When the game is over :
-  //...
+    // Init a new game
+    newGameInit(state); 
+    
+    // Main loop
+    while(state.currentPhase !== 'finished') {
+        await playTurn(state);
+        checkForLoser(state);
+        checkIfGameFinished(state);
+        setNextTurn(state);
+        updateBoardDisplay(state);
+    }
+    
+    // When the game is over : 
+    //...
 }
 
 start.addEventListener("click", () => {
-  // Check if no game is currently running
-  if (
-    gameState.currentPhase !== "finished" &&
-    gameState.currentPhase !== undefined
-  ) {
-    const confirmNewGame = confirm(
-      "⚠️ A game is already running!\nDo you want to abandon it and start a new game?"
-    );
-
-    if (!confirmNewGame) {
-      return; // If player refuses, cancel the launch of a new game
+    // Check if no game is currently running
+    if (gameState.currentPhase !== 'finished' && gameState.currentPhase !== undefined) {
+        const confirmNewGame = confirm("⚠️ A game is already running!\nDo you want to abandon it and start a new game?");
+        
+        if (!confirmNewGame) {
+            return; // If player refuses, cancel the launch of a new game
+        }
     }
-  }
-
-  // Launch a new game
-  pontuXL(gameState);
+    
+    // Launch a new game
+    pontuXL(gameState);
 });
+
+
+// GPT : 
+
+// État temporaire pour les visuels
+let tempUI = {
+    highlightedCells: [],
+    highlightedBridges: []
+};
+
+// --- FONCTIONS PRINCIPALES ---
+function playTurn(state) {
+    if (state.currentPhase === 'startingPhase') {
+        return handlePlacementPhase(state);
+    } else {
+        return handleMovementPhase(state);
+    }
+}
+
+// --- PHASE DE PLACEMENT ---
+function handlePlacementPhase(state) {
+    return new Promise((resolve) => {
+        const currentColor = state.playerOrder[state.currentPlayerIndex];
+        let selectedCell = null;
+
+        // 1. Mode sélection
+        board.onclick = (e) => {
+            const cell = e.target.closest('.cell');
+            if (!cell) return;
+
+            const x = parseInt(cell.dataset.x);
+            const y = parseInt(cell.dataset.y);
+
+            // Reset les anciens highlights
+            clearTempHighlights();
+
+            if (getElfAtPosition(state, x, y)) {
+                showTempMessage("Case occupée !", 'error');
+            } else {
+                selectedCell = cell;
+                cell.classList.add('temp-selected');
+                showTempMessage("Prêt à placer un lutin", 'success');
+            }
+        };
+
+        // 2. Confirmation
+        confirmButton.onclick = () => {
+            if (!selectedCell) {
+                showTempMessage("Sélectionnez une case d'abord", 'error');
+                return;
+            }
+
+            const x = parseInt(selectedCell.dataset.x);
+            const y = parseInt(selectedCell.dataset.y);
+            state.elves[currentColor].push([x, y]);
+            
+            // Met à jour l'affichage permanent
+            updateBoard(state);
+            resolve();
+        };
+    });
+}
+
+// --- PHASE DE MOUVEMENT ---
+function handleMovementPhase(state) {
+    return new Promise((resolve) => {
+        const currentColor = state.playerOrder[state.currentPlayerIndex];
+        let selectedElf = null;
+        let availableMoves = [];
+
+        // 1. Sélection du lutin
+        board.onclick = (e) => {
+            const cell = e.target.closest('.cell');
+            if (!cell) return;
+
+            const x = parseInt(cell.dataset.x);
+            const y = parseInt(cell.dataset.y);
+            const elf = getElfAtPosition(state, x, y);
+
+            clearTempHighlights();
+
+            if (!elf || elf.color !== currentColor) {
+                showTempMessage("Sélectionnez votre lutin", 'error');
+                return;
+            }
+
+            selectedElf = { x, y };
+            availableMoves = getValidMoves(state, x, y);
+            
+            // Highlight visuel
+            cell.classList.add('temp-selected');
+            availableMoves.forEach(([mx, my]) => {
+                const moveCell = document.querySelector(`.cell[data-x="${mx}"][data-y="${my}"]`);
+                moveCell.classList.add('temp-available');
+                tempUI.highlightedCells.push(moveCell);
+            });
+        };
+
+        // 2. Confirmation du mouvement
+        confirmButton.onclick = () => {
+            if (!selectedElf) {
+                showTempMessage("Sélectionnez un lutin d'abord", 'error');
+                return;
+            }
+
+            // Ici vous devriez gérer la sélection de destination et des ponts
+            // (version simplifiée pour l'exemple)
+            updateBoard(state);
+            resolve();
+        };
+    });
+}
+
+// --- HELPERS SIMPLES ---
+function updateBoard(state) {
+    // Efface tout
+    document.querySelectorAll('.cell').forEach(cell => {
+        cell.className = 'cell';
+    });
+
+    // Affiche les lutins
+    Object.entries(state.elves).forEach(([color, elves]) => {
+        elves.forEach(([x, y]) => {
+            const cell = document.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
+            cell.classList.add(`elf-${color}`);
+        });
+    });
+}
+
+function clearTempHighlights() {
+    tempUI.highlightedCells.forEach(cell => {
+        cell.classList.remove('temp-selected', 'temp-available');
+    });
+    tempUI.highlightedCells = [];
+}
+
+function showTempMessage(msg, type) {
+    const feedback = document.getElementById('feedback');
+    feedback.textContent = msg;
+    feedback.className = `feedback ${type}`;
+    setTimeout(() => feedback.className = 'feedback', 2000);
+}
+
+function getElfAtPosition(state, x, y) {
+    for (const [color, elves] of Object.entries(state.elves)) {
+        if (elves.some(([ex, ey]) => ex === x && ey === y)) {
+            return { color };
+        }
+    }
+    return null;
+}
