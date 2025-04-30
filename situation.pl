@@ -10,6 +10,17 @@ eliminationJoueur((ListeLutin, ListePont, OrdreJeu), (Couleur, _, _), (NewListeL
 
 
 /**
+ * Met le tour au joueur suivant
+*/
+rotation([Joueur1,Joueur2,Joueur3,Joueur4], Result):-
+    Result = [Joueur2,Joueur3,Joueur4 |[Joueur1]].
+rotation([Joueur1,Joueur2,Joueur3], Result):-
+    Result = [Joueur2,Joueur3 |[Joueur1]].
+rotation([Joueur1,Joueur2], Result):-
+    Result = [Joueur2|[Joueur1]].
+
+
+/**
  * On vérifie que chaque lutin de meme couleur ne possède plus aucun pont sur sa case 
  * donc aucune possibilité pour les lutins de se déplacer sur une autre case actuellement
 */
@@ -46,39 +57,76 @@ suppLutinOrdrejeu((Couleur, _, _), OrdreJeu, NewOrdreJeu):-
     delete(Couleur, OrdreJeu, NewOrdreJeu).
 
 
+
+
+
+
 /* ################################################################################################################## */
 /* ################################################################################################################## */
-/* ###################################### partie MinMAx ( pas alpha beta )########################################### */
+/* ###################################### partie Max^N ( pas alpha beta )############################################ */
 /* ################################################################################################################## */
 /* ################################################################################################################## */
 
 infini(100000000000).
-negative_infini(100000000000).
+negative_infini(-100000000000).
+
 
 /*
     Prédicat pour le tour de jeu après la phase de placement
     à utiliser dans le prédicat IA
 */
-min_max((ListeLutin, ListePont, OrdreJeu), 0, BooleanMaxTurn, Score, (NewListeLutin, NewListePont, NewOrdreJeu)):-
+%% cas de base 1 : profondeur arrivé à une feuille.
+max_n((ListeLutin, ListePont, OrdreJeu),JoueurActuel, 0, Score).
+    heuristique((ListeLutin, ListePont, OrdreJeu), Score).
+
+%%forme du score
+%%[(Vert, 5), (Rouge, 7), (Jaune, 2), (Bleu, 9)]
+
+%% cas de base 2 : on s arrête quand plus de lutins adverses.
+max_n((ListeLutin, ListePont, [JoueurActuel]),JoueurActuel, _, Score, NewScore). % (NewListeLutin, NewListePont, NewOrdreJeu):-
+    infini(X),
+    changevecteur(Score, JoueurActuel, X, NewScore).
+
+%% cas de base 3 : le joueur qu on cherche à maximiser perds (on veut le faire gagner)
+max_n((ListeLutin, ListePont, Joueurs),JoueurActuel , _, Score, NewScore):-
+    not(member(JoueurActuel, Joueurs)),
+    rotation([Couleur1|Reste], NouveauTourDeJoueur),
+    negative_infini(X),
+    changevecteur(Score, JoueurActuel, X, NewScore).
+    
+    
+max_n((ListeLutin, ListePont, OrdreJeu), JoueurActuel, Depth, Score, NextScore):-
+
+
     heuristique((ListeLutin, ListePont, OrdreJeu), Score).
     
+
+
+
+/**
+*Change le vecteur de score avec la valeur et couleur donnée en entrée
+*/
+changevecteur([(Couleur, Score)|ResteScore], Couleur, NewScoreInteger, [(Couleur, NewScoreInteger)|ResteScore]).
+changevecteur([(Couleur1, Score)|ResteScore], Couleur2, NewScoreInteger, [(Couleur1,Score)|NewScorevecteur]):-
+    changevecteur(ResteScore, Couleur2, NewScoreInteger, NewScorevecteur).
+
 
 
 /**
  * Calcul maximum between current value and MinMax with a depth - 1
 */
-fct_max(Value, (ListeLutin, ListePont, OrdreJeu), Depth, BooleanMaxTurn, (NewListeLutin, NewListePont, NewOrdreJeu), Result ):-
+/*fct_max(Value, (ListeLutin, ListePont, OrdreJeu), Depth, BooleanMaxTurn, (NewListeLutin, NewListePont, NewOrdreJeu), Result ):-
     ReduceDepth is Depth - 1,
-    min_max((ListeLutin, ListePont, OrdreJeu), ReduceDepth, BooleanMaxTurn, ValueMinMax, (NewListeLutin, NewListePont, NewOrdreJeu)),
-    ( Value =< ValueMinMax -> Result is ValueMinMax ; Result is Value).
+    min_max((ListeLutin, ListePont, OrdreJeu), ReduceDepth, ValueMinMax, (NewListeLutin, NewListePont, NewOrdreJeu)),
+    ( Value =< ValueMinMax -> Result is ValueMinMax ; Result is Value).*/
 
 /**
  * Calcul minimum between current value and MinMax with a depth - 1
 */
-fct_min(Value, (ListeLutin, ListePont, OrdreJeu), Depth, BooleanMaxTurn, (NewListeLutin, NewListePont, NewOrdreJeu), Result ):-
+/*fct_min(Value, (ListeLutin, ListePont, OrdreJeu), Depth, BooleanMaxTurn, (NewListeLutin, NewListePont, NewOrdreJeu), Result ):-
     ReduceDepth is Depth - 1,
-    min_max((ListeLutin, ListePont, OrdreJeu), ReduceDepth, BooleanMaxTurn, ValueMinMax, (NewListeLutin, NewListePont, NewOrdreJeu)),
-    ( Value =< ValueMinMax -> Result is Value ; Result is ValueMinMax).
+    min_max((ListeLutin, ListePont, OrdreJeu), ReduceDepth, ValueMinMax, (NewListeLutin, NewListePont, NewOrdreJeu)),
+    ( Value =< ValueMinMax -> Result is Value ; Result is ValueMinMax).*/
 
 
 
@@ -88,6 +136,7 @@ heuristique((ListeLutin, ListePont, [Couleur|Reste]), Scores).
 
 /*
  compte les ponts d'une proximité de maximum 2 de la case ####
+ (in, in, in, out) -  3e in doit commencer à 0
 */
 pontAProximite((_,X,Y), [], Compte, Compte).
 pontAProximite((_,X,Y), [(X1, Y1)-(X2,Y2)|RestePont], Compte, CompteRecursif):-
@@ -102,4 +151,56 @@ pontAProximite((_,X,Y), [(X1, Y1)-(X2,Y2)|RestePont], Compte, CompteRecursif):-
         Newcompte is Compte
     ),
     pontAProximite((_,X,Y), RestePont, Newcompte, CompteRecursif).
+
+
+/* ################################################################################################################## */
+/* ################################## Fonction servant à calculer les scores ######################################## */
+/* ################################################################################################################## */
+
+
+/**
+ * Enlève des points aux scores du joueur qu on cherche à maximiser en fonction du 
+ * nombre de lutin d'une couleure différente de lui
+ * (in, in, out)
+ * (en fonction du nbre de point a enlever modifier la valeur ici "NewAcc is Acc + 1")
+*/
+perdPointLutinAdverse([(CouleurLutin, _, _)|Reste], (Couleur, Score), ScoreFinal ):-
+    perdPointLutinAdverseAcc([(CouleurLutin, _, _)|Reste], (Couleur, Score), ScoreFinal, 0 ).
+
+perdPointLutinAdverseAcc([], (Couleur, Score), ScoreFinal, Acc ):-
+    ScoreFinal is Score - Acc.
+perdPointLutinAdverseAcc([(CouleurLutin, _, _)|Reste], (Couleur, Score), Result, Acc ):-
+    (CouleurLutin = Couleur -> NewAcc is Acc ; NewAcc is Acc + 1),
+    perdPointLutinAdverseAcc(Reste, (Couleur, Score), Result, NewAcc ).
+
+
+/**
+ * Ajoute des points aux scores du joueur qu on cherche à maximiser en fonction du 
+ * nombre de lutin de la meme couleur que lui
+ * (in, in, out)
+ * (en fonction du nbre de point a enlever modifier la valeur ici "NewAcc is Acc + 1")
+*/
+gagnePointMesJoueurs([(CouleurLutin, _, _)|Reste], (Couleur, Score), ScoreFinal ):-
+    gagnePointMesJoueurs([(CouleurLutin, _, _)|Reste], (Couleur, Score), ScoreFinal, 0 ).
+
+gagnePointMesJoueurs([], (Couleur, Score), ScoreFinal, Acc ):-
+    ScoreFinal is Score + Acc.
+gagnePointMesJoueurs([(CouleurLutin, _, _)|Reste], (Couleur, Score), Result, Acc ):-
+    (CouleurLutin \= Couleur -> NewAcc is Acc ; NewAcc is Acc + 1),
+    gagnePointMesJoueurs(Reste, (Couleur, Score), Result, NewAcc ).
+
+
+/**
+ * Ajoute des points aux scores du joueur qu on cherche à maximiser en fonction du 
+ * nombre de pont à une proximité de maximum 2 de la case 
+ * (in, in, in, out)
+*/
+gagnePointMesPontsAutour([(CouleurLutin, X, Y)|Reste], (Couleur, Score), ListePont, ScoreFinal ):-
+    gagnePointMesPontsAutour([(CouleurLutin, X, Y)|Reste], (Couleur, Score),ListePont,  ScoreFinal, 0 ).
+
+gagnePointMesPontsAutour([], (_, Score), _, ScoreFinal, Acc ):-
+    ScoreFinal is Score + Acc.
+gagnePointMesPontsAutour([(CouleurLutin, X, Y)|Reste], (Couleur, Score), ListePont, Result, Acc ):-
+    (CouleurLutin \= Couleur -> NewAcc is Acc ; pontAProximite((CouleurLutin,X,Y), ListePont, 0, Compte), NewAcc is Acc + Compte),
+    gagnePointMesPontsAutour(Reste, (Couleur, Score), ListePont, Result, NewAcc ).
 
