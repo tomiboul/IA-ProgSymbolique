@@ -1,4 +1,4 @@
-export const gameState = {
+const gameState = {
     elves: {
         // each elf is represented by its coord (x,y)
         green: [],
@@ -43,11 +43,11 @@ export const gameState = {
 }
 
 // const playersOrder = [green,blue,yellow,red];
-const playersOrder = [state.elves.green, state.elves.blue, state.elves.yellow, state.elves.red];
+const playersOrder = [gameState.elves.green, gameState.elves.blue, gameState.elves.yellow, gameState.elves.red];
 
-const board = document.getElementById("board");
+board = document.getElementById("board");
 
-export function newGameInit(state) {
+function newGameInit(state) {
     // Init state
     state.elves.green  = [];
     state.elves.blue   = [];
@@ -64,7 +64,8 @@ export function newGameInit(state) {
     state.bridges = state.generateAllBridges();
 }
 
-function handlePlacementTurn(state){
+function handlePlacementTurn(state, x, y) {
+    
     return null;
 }
 
@@ -74,10 +75,22 @@ function handlePlayingTurn(state) {
 }
 
 function playTurn(state){
-        // wait for user to click on a cell
-        board.addEventListener("click", () => {
-            // Here, retrieve the coords of the selected cell
-        })
+
+
+        // wait for user to click on a celldocument.querySelectorAll(".cell").forEach(cell => {
+            document.querySelectorAll(".cell").forEach(cell => {
+                cell.addEventListener("click", (e) => {
+                    const clickedCell = e.target.closest('.cell');
+            
+                    const id = clickedCell.id; 
+                    const parts = id.split("-"); 
+                    const x = parseInt(parts[0], 10);
+                    const y = parseInt(parts[1], 10);
+            
+                    console.log(`Coordonnées : x = ${x}, y = ${y}`);
+                });
+            });
+        
 
         if(state.currentPhase === 'placementPhase') {
         // check if currentPlayer doesn't already have an elf on that cell
@@ -178,7 +191,27 @@ function checkIfGameFinished(state) {
 }
 
 function updateBoardDisplay(state) {
+    // Clear all cells
+    document.querySelectorAll('.cell').forEach(cell => {
+        cell.className = 'cell';
+    });
 
+    // Display elves
+    Object.entries(state.elves).forEach(([color, elves]) => {
+        elves.forEach(([x, y]) => {
+            const cell = document.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
+            cell.classList.add(`elf-${color}`);
+        });
+    });
+
+    // Display bridges (if any)
+    state.bridges.forEach(bridge => {
+        const [x1, y1, x2, y2] = bridge[0];
+        const cell1 = document.querySelector(`.cell[data-x="${x1}"][data-y="${y1}"]`);
+        const cell2 = document.querySelector(`.cell[data-x="${x2}"][data-y="${y2}"]`);
+        cell1.classList.add('bridge');
+        cell2.classList.add('bridge');
+    });
 }
 
 async function pontuXL(state, playersOrder) {
@@ -198,7 +231,10 @@ async function pontuXL(state, playersOrder) {
     //...
 }
 
-start.addEventListener("click", () => {
+const startButton = document.getElementById("startgame");
+const confirmButton = document.getElementById("confirm-button");
+
+document.getElementById("startgame").addEventListener("click", function() {
     // Check if no game is currently running
     if (gameState.currentPhase !== 'finished' && gameState.currentPhase !== undefined) {
         const confirmNewGame = confirm("⚠️ A game is already running!\nDo you want to abandon it and start a new game?");
@@ -207,7 +243,7 @@ start.addEventListener("click", () => {
             return; // If player refuses, cancel the launch of a new game
         }
     }
-    
+    console.log("partie lancée");
     // Launch a new game
     pontuXL(gameState);
 });
@@ -216,149 +252,149 @@ start.addEventListener("click", () => {
 // GPT : 
 
 // État temporaire pour les visuels
-let tempUI = {
-    highlightedCells: [],
-    highlightedBridges: []
-};
+// let tempUI = {
+//     highlightedCells: [],
+//     highlightedBridges: []
+// };
 
-// --- FONCTIONS PRINCIPALES ---
-function playTurn(state) {
-    if (state.currentPhase === 'startingPhase') {
-        return handlePlacementPhase(state);
-    } else {
-        return handleMovementPhase(state);
-    }
-}
+// // --- FONCTIONS PRINCIPALES ---
+// function playTurn(state) {
+//     if (state.currentPhase === 'startingPhase') {
+//         return handlePlacementPhase(state);
+//     } else {
+//         return handleMovementPhase(state);
+//     }
+// }
 
-// --- PHASE DE PLACEMENT ---
-function handlePlacementPhase(state) {
-    return new Promise((resolve) => {
-        const currentColor = state.playerOrder[state.currentPlayerIndex];
-        let selectedCell = null;
+// // --- PHASE DE PLACEMENT ---
+// function handlePlacementPhase(state) {
+//     return new Promise((resolve) => {
+//         const currentColor = state.playerOrder[state.currentPlayerIndex];
+//         let selectedCell = null;
 
-        // 1. Mode sélection
-        board.onclick = (e) => {
-            const cell = e.target.closest('.cell');
-            if (!cell) return;
+//         // 1. Mode sélection
+//         board.onclick = (e) => {
+//             const cell = e.target.closest('.cell');
+//             if (!cell) return;
 
-            const x = parseInt(cell.dataset.x);
-            const y = parseInt(cell.dataset.y);
+//             const x = parseInt(cell.dataset.x);
+//             const y = parseInt(cell.dataset.y);
 
-            // Reset les anciens highlights
-            clearTempHighlights();
+//             // Reset les anciens highlights
+//             clearTempHighlights();
 
-            if (getElfAtPosition(state, x, y)) {
-                showTempMessage("Case occupée !", 'error');
-            } else {
-                selectedCell = cell;
-                cell.classList.add('temp-selected');
-                showTempMessage("Prêt à placer un lutin", 'success');
-            }
-        };
+//             if (getElfAtPosition(state, x, y)) {
+//                 showTempMessage("Case occupée !", 'error');
+//             } else {
+//                 selectedCell = cell;
+//                 cell.classList.add('temp-selected');
+//                 showTempMessage("Prêt à placer un lutin", 'success');
+//             }
+//         };
 
-        // 2. Confirmation
-        confirmButton.onclick = () => {
-            if (!selectedCell) {
-                showTempMessage("Sélectionnez une case d'abord", 'error');
-                return;
-            }
+//         // 2. Confirmation
+//         document.getElementById("confirm-button").onclick = () => {
+//             if (!selectedCell) {
+//                 showTempMessage("Sélectionnez une case d'abord", 'error');
+//                 return;
+//             }
 
-            const x = parseInt(selectedCell.dataset.x);
-            const y = parseInt(selectedCell.dataset.y);
-            state.elves[currentColor].push([x, y]);
+//             const x = parseInt(selectedCell.dataset.x);
+//             const y = parseInt(selectedCell.dataset.y);
+//             state.elves[currentColor].push([x, y]);
             
-            // Met à jour l'affichage permanent
-            updateBoard(state);
-            resolve();
-        };
-    });
-}
+//             // Met à jour l'affichage permanent
+//             updateBoard(state);
+//             resolve();
+//         };
+//     });
+// }
 
-// --- PHASE DE MOUVEMENT ---
-function handleMovementPhase(state) {
-    return new Promise((resolve) => {
-        const currentColor = state.playerOrder[state.currentPlayerIndex];
-        let selectedElf = null;
-        let availableMoves = [];
+// // --- PHASE DE MOUVEMENT ---
+// function handleMovementPhase(state) {
+//     return new Promise((resolve) => {
+//         const currentColor = state.playerOrder[state.currentPlayerIndex];
+//         let selectedElf = null;
+//         let availableMoves = [];
 
-        // 1. Sélection du lutin
-        board.onclick = (e) => {
-            const cell = e.target.closest('.cell');
-            if (!cell) return;
+//         // 1. Sélection du lutin
+//         board.onclick = (e) => {
+//             const cell = e.target.closest('.cell');
+//             if (!cell) return;
 
-            const x = parseInt(cell.dataset.x);
-            const y = parseInt(cell.dataset.y);
-            const elf = getElfAtPosition(state, x, y);
+//             const x = parseInt(cell.dataset.x);
+//             const y = parseInt(cell.dataset.y);
+//             const elf = getElfAtPosition(state, x, y);
 
-            clearTempHighlights();
+//             clearTempHighlights();
 
-            if (!elf || elf.color !== currentColor) {
-                showTempMessage("Sélectionnez votre lutin", 'error');
-                return;
-            }
+//             if (!elf || elf.color !== currentColor) {
+//                 showTempMessage("Sélectionnez votre lutin", 'error');
+//                 return;
+//             }
 
-            selectedElf = { x, y };
-            availableMoves = getValidMoves(state, x, y);
+//             selectedElf = { x, y };
+//             availableMoves = getValidMoves(state, x, y);
             
-            // Highlight visuel
-            cell.classList.add('temp-selected');
-            availableMoves.forEach(([mx, my]) => {
-                const moveCell = document.querySelector(`.cell[data-x="${mx}"][data-y="${my}"]`);
-                moveCell.classList.add('temp-available');
-                tempUI.highlightedCells.push(moveCell);
-            });
-        };
+//             // Highlight visuel
+//             cell.classList.add('temp-selected');
+//             availableMoves.forEach(([mx, my]) => {
+//                 const moveCell = document.querySelector(`.cell[data-x="${mx}"][data-y="${my}"]`);
+//                 moveCell.classList.add('temp-available');
+//                 tempUI.highlightedCells.push(moveCell);
+//             });
+//         };
 
-        // 2. Confirmation du mouvement
-        confirmButton.onclick = () => {
-            if (!selectedElf) {
-                showTempMessage("Sélectionnez un lutin d'abord", 'error');
-                return;
-            }
+//         // 2. Confirmation du mouvement
+//         document.getElementById("confirm-button").onclick = () => {
+//             if (!selectedElf) {
+//                 showTempMessage("Sélectionnez un lutin d'abord", 'error');
+//                 return;
+//             }
 
-            // Ici vous devriez gérer la sélection de destination et des ponts
-            // (version simplifiée pour l'exemple)
-            updateBoard(state);
-            resolve();
-        };
-    });
-}
+//             // Ici vous devriez gérer la sélection de destination et des ponts
+//             // (version simplifiée pour l'exemple)
+//             updateBoard(state);
+//             resolve();
+//         };
+//     });
+// }
 
-// --- HELPERS SIMPLES ---
-function updateBoard(state) {
-    // Efface tout
-    document.querySelectorAll('.cell').forEach(cell => {
-        cell.className = 'cell';
-    });
+// // --- HELPERS SIMPLES ---
+// function updateBoard(state) {
+//     // Efface tout
+//     document.querySelectorAll('.cell').forEach(cell => {
+//         cell.className = 'cell';
+//     });
 
-    // Affiche les lutins
-    Object.entries(state.elves).forEach(([color, elves]) => {
-        elves.forEach(([x, y]) => {
-            const cell = document.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
-            cell.classList.add(`elf-${color}`);
-        });
-    });
-}
+//     // Affiche les lutins
+//     Object.entries(state.elves).forEach(([color, elves]) => {
+//         elves.forEach(([x, y]) => {
+//             const cell = document.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
+//             cell.classList.add(`elf-${color}`);
+//         });
+//     });
+// }
 
-function clearTempHighlights() {
-    tempUI.highlightedCells.forEach(cell => {
-        cell.classList.remove('temp-selected', 'temp-available');
-    });
-    tempUI.highlightedCells = [];
-}
+// function clearTempHighlights() {
+//     tempUI.highlightedCells.forEach(cell => {
+//         cell.classList.remove('temp-selected', 'temp-available');
+//     });
+//     tempUI.highlightedCells = [];
+// }
 
-function showTempMessage(msg, type) {
-    const feedback = document.getElementById('feedback');
-    feedback.textContent = msg;
-    feedback.className = `feedback ${type}`;
-    setTimeout(() => feedback.className = 'feedback', 2000);
-}
+// function showTempMessage(msg, type) {
+//     const feedback = document.getElementById('feedback');
+//     feedback.textContent = msg;
+//     feedback.className = `feedback ${type}`;
+//     setTimeout(() => feedback.className = 'feedback', 2000);
+// }
 
-function getElfAtPosition(state, x, y) {
-    for (const [color, elves] of Object.entries(state.elves)) {
-        if (elves.some(([ex, ey]) => ex === x && ey === y)) {
-            return { color };
-        }
-    }
-    return null;
-}
+// function getElfAtPosition(state, x, y) {
+//     for (const [color, elves] of Object.entries(state.elves)) {
+//         if (elves.some(([ex, ey]) => ex === x && ey === y)) {
+//             return { color };
+//         }
+//     }
+//     return null;
+// }

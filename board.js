@@ -2,7 +2,7 @@ const WS_PROTO = "ws://"
 const WS_ROUTE = "/bridge"
 
 
-const board = document.getElementById("board");
+let board = document.getElementById("board");
 
 const boardSize = 6;
 const totalSize = boardSize * 2 - 1;
