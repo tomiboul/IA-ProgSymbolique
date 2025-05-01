@@ -1,6 +1,6 @@
 %%:- module(situation, [ajoutLutin/3]).
 %% etat(ListeLutin, ListePont, OrdreJeu)
-:- use_module(jeu, [ajoutLutin/3, deplaceLutin/4, suppLutin/3 , deplacePont/4, suppPont/3]).
+:- use_module(jeu, [ajoutLutin/3, deplaceLutin/4, suppLutin/3 , deplacePont/4, suppPont/3, pontExistant/2]).
 
 eliminationJoueur((ListeLutin, ListePont, OrdreJeu), (Couleur, _, _), (NewListeLutin, ListePont, NewOrdreJeu)):-
     findall((Couleur, _, _), member((Couleur, _, _), ListeLutin), ListeLutinCouleur), 
@@ -110,6 +110,20 @@ changevecteur([(Couleur, Score)|ResteScore], Couleur, NewScoreInteger, [(Couleur
 changevecteur([(Couleur1, Score)|ResteScore], Couleur2, NewScoreInteger, [(Couleur1,Score)|NewScorevecteur]):-
     changevecteur(ResteScore, Couleur2, NewScoreInteger, NewScorevecteur).
 
+/**
+* Renvoie les coups possibles à partir d'un état (in, in, out)
+*/
+coupsPossibles((ListeLutin, ListePont, OrdreJeu), JoueurActuel, ListeEtat):-
+    findall(
+        (ListeLutinPossible, ListePontPossible, OrdreJeuPossible),
+
+        (deplaceLutin((JoueurActuel, X, Y), (JoueurActuel, X1, Y1), ListeLutin, ListeLutinPossible),
+        ((pontExistant(ListePont, Pont), deplacePont(Pont, NewPont, ListePont, ListePontPossible)) ; 
+        suppPont((X2,Y2)-(X3,Y3), ListePont, ListePontPossible)), 
+        rotation(OrdreJeu, OrdreJeuPossible)),
+        
+        ListeEtat
+    ).
 
 
 /**

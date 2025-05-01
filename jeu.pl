@@ -1,4 +1,4 @@
-:- module(jeu, [ajoutLutin/3, deplaceLutin/4, suppLutin/3 , deplacePont/4, suppPont/3]).
+:- module(jeu, [ajoutLutin/3, deplaceLutin/4, suppLutin/3 , deplacePont/4, suppPont/3, pontExistant/2]).
 
 
 /*################## Les couleurs ####################*/
@@ -41,6 +41,7 @@ ajoutLutin((Couleur, X, Y), ListeLutin, NewListeLutin):-
     not(member((_, X,Y), ListeLutin)), %% on va vérifier qu il n existe pas deja de lutin a cette position
     NewListeLutin = [(Couleur, X, Y)|ListeLutin].
 
+/*
 deplaceLutin((Couleur, X, Y), (Couleur, NewX, NewY), ListeLutin, NewListeLutin):-
     number(X),
     number(Y),
@@ -55,15 +56,41 @@ deplaceLutin((Couleur, X, Y), (Couleur, NewX, NewY), ListeLutin, NewListeLutin):
     member((Couleur, X, Y), ListeLutin),
     not(member((Couleur, NewX, NewY), ListeLutin)),
     suppLutin((Couleur, X, Y), ListeDist, TempNewListeLutin),
+    NewListeLutin = [(Couleur, NewX, NewY)|TempNewListeLutin], !.*/
+
+
+%%CHANGER RAJOUTER SI YA PAS DE PONT ON NE CALCULE PAS UN DEPLACEMENT DE LUTIN
+deplaceLutin((Couleur, X, Y), (Couleur, NewX, NewY), ListeLutin, NewListeLutin) :-
+    member((Couleur, X, Y), ListeLutin),
+    deplaceCaseACote(X, Y, NewX, NewY),
+    \+ member((_, NewX, NewY), ListeLutin),
+    suppLutin((Couleur, X, Y), ListeLutin, TempNewListeLutin),
     NewListeLutin = [(Couleur, NewX, NewY)|TempNewListeLutin].
+
+deplaceCaseACote(X, Y, NewX, Y) :-
+    (NewX is X + 1 ; NewX is X - 1),    
+    NewX =< 6,
+    NewX >= 1.
+
+deplaceCaseACote(X, Y, X, NewY) :-
+    (NewY is Y + 1 ; NewY is Y - 1),
+    NewY =< 6,
+    NewY >= 1.
+
 
 /* ATTENTION ne pas remettre le '_' à la palce de Couleur car "nécéssaire" dans fichier situation.pl */
 suppLutin((Couleur, X, Y), ListeLutin, NewListeLutin):-
     member((Couleur, X, Y), ListeLutin),
     delete(ListeLutin, (Couleur, X, Y), NewListeLutin).
     
+pontExistant(ListePont, Pont):-
+    member(Pont, ListePont).
+
 
 /*################# Fonction ponts ##################*/
+/**
+* (in, in, in, out)
+*/
 deplacePont(((X1, Y1)-(X2,Y2)), ((NewX1, NewY1)-(NewX2,NewY2)), ListePont, NewListePont):- 
     %% a enleve car de souvenir on peut pas ajouter des ponts
     number(X1),
@@ -107,7 +134,7 @@ deplacePont(((X1, Y1)-(X2,Y2)), ((NewX1, NewY1)-(NewX2,NewY2)), ListePont, NewLi
     NewListePont = [((NewX1, NewY1)-(NewX2,NewY2))|TempNewListePont].
     
 
-
 suppPont(((X1, Y1)-(X2,Y2)), ListePont, NewListePont):- 
+    member((X1,Y1)-(X2,Y2), ListePont),
     delete(ListePont, ((X1, Y1)-(X2,Y2)), NewListePont).
 
