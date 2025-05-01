@@ -1,6 +1,6 @@
 const gameState = {
     elves: {
-        // each elf is represented by its coord (x,y)
+        // each elf is represented by its coord (x,y,stuck(bool))
         green: [],
         blue: [],
         yellow: [],
@@ -64,35 +64,118 @@ function newGameInit(state) {
     state.bridges = state.generateAllBridges();
 }
 
-function handlePlacementTurn(state, x, y) {
+async function handlePlacementTurn(state) {
+    let x = 9999999;
+    let y = 9999999;
+    while(!checkIfCellIsFree(x, y, state) ) {
+    const clickedCell = await waitForClickOnCell();
+
+            const id = clickedCell.id; 
+            const parts = id.split("-"); 
+            x = parseInt(parts[0], 10);
+            y = parseInt(parts[1], 10);
+            console.log(`Coordonnées : x = ${x}, y = ${y}`);
+    }
     
-    return null;
+    gameState.elves[gameState.currentPlayer].push([x, y, false]); // false = not stuck
+    console.log("Added elf at position : ", x, y);
+    console.log(gameState.playerOrder[gameState.currentPlayer] + " player's elves :" + gameState.elves[gameState.currentPlayer]);
+    
+    // Add elf to the board
+    const cell = document.getElementById(`${x}-${y}`);
+    const elfImage = document.createElement("img");
+    elfImage.className = "lutin"; // Add a class to the image for styling
+
+    console.log("currentPlayer : ", gameState.currentPlayerIndex);
+    switch (gameState.currentPlayerIndex) {
+        case 0:
+            elfImage.src = "images/lutin_vert.png";
+            break;
+        case 1:
+            elfImage.src = "images/lutin_rouge.png";
+            break;
+        case 2:
+            elfImage.src = "images/lutin_jaune.png";
+            break;
+        case 3:
+            elfImage.src = "images/lutin_bleu.png";
+            break;
+    }
+    cell.append(elfImage); // Add the image to the cell
+    console.log("Added elf at position : ", x, y);
 }
 
 
-function handlePlayingTurn(state) {
-    return null;
+async function handlePlayingTurn(state) {
+    // while(false){
+    // const clickedCell = await waitForClickOnCell(gameState);
+
+    //         const id = clickedCell.id; 
+    //         const parts = id.split("-"); 
+    //         const x = parseInt(parts[0], 10);
+    //         const y = parseInt(parts[1], 10);
+    //         console.log(`Coordonnées : x = ${x}, y = ${y}`);
+    // }
 }
 
-function playTurn(state){
+function checkIfCellIsFree(x, y, state) {
+    if(x < 0 || x > 6 || y < 0 || y > 6) {
+        console.log("Cell is out of the board : ", x, y);
+        return null;
+    }
 
+    const elves = gameState.elves;
+    console.log("Checking if cell is free on this position : ", x, y);
+    
+    for (const playerId of Object.keys(elves)) {
+        for (const elf of elves[playerId]) {
+            const [thisElfX, thisElfY] = elf;
+            console.log("voila les coordonnées " + thisElfX + "-" + thisElfY);
+            if(thisElfX === x && thisElfY === y) {
+                return false;
+            }
+        }
+    }
+    
+    console.log("Cell is free on this position : ", x, y);
+    return true;
+}
 
-        // wait for user to click on a celldocument.querySelectorAll(".cell").forEach(cell => {
+function checkElfOnCell(x, y, state) {}
+
+async function waitForClickOnCell() {
+    return new Promise((resolve) => {
+        const handler = (e) => {
+            const clickedCell = e.target.closest('.cell');
+            // if (!clickedCell) return;
+
+            // Supprimer tous les écouteurs après le clic
             document.querySelectorAll(".cell").forEach(cell => {
-                cell.addEventListener("click", (e) => {
-                    const clickedCell = e.target.closest('.cell');
-            
-                    const id = clickedCell.id; 
-                    const parts = id.split("-"); 
-                    const x = parseInt(parts[0], 10);
-                    const y = parseInt(parts[1], 10);
-            
-                    console.log(`Coordonnées : x = ${x}, y = ${y}`);
-                });
+                cell.removeEventListener("click", handler);
             });
-        
 
+            resolve(clickedCell); // On retourne la cellule cliquée
+        };
+
+        document.querySelectorAll(".cell").forEach(cell => {
+            console.log("here");
+            cell.addEventListener("click", handler);
+            console.log("hereeee");
+        });
+    }); 
+} 
+
+async function playTurn(state){
+
+        document.querySelectorAll(".cell").forEach(cell => {
+            console.log(cell.id);
+        });
+
+
+        
         if(state.currentPhase === 'placementPhase') {
+            
+            await handlePlacementTurn(state);
         // check if currentPlayer doesn't already have an elf on that cell
 
         // if currentPlayer has an elf on that cell -> display message
@@ -214,17 +297,26 @@ function updateBoardDisplay(state) {
     });
 }
 
+function setNextTurn(state) {
+    state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.playerOrder.length;
+    console.log("New current player : ", state.currentPlayerIndex);
+}
+
 async function pontuXL(state, playersOrder) {
     // Init a new game
-    newGameInit(state); 
+    newGameInit(state);
     
+    let i = 1;
+
     // Main loop
     while(state.currentPhase !== 'finished') {
+        console.log("Turn n°", i);
         await playTurn(state);
-        checkForLoser(state);
-        checkIfGameFinished(state);
+        i++
+        //checkForLoser(state);
+        //checkIfGameFinished(state);
         setNextTurn(state);
-        updateBoardDisplay(state);
+        // updateBoardDisplay(state);
     }
     
     // When the game is over : 
