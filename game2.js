@@ -7,7 +7,7 @@ const gameState = {
         red: []
     },
 
-    bridges: [],
+    bridges: [], //[ ((x1,y1),(x2,y2))]
     currentPlayerIndex: 0,
     playerOrder: ['green', 'blue', 'yellow', 'red'],
 
@@ -74,35 +74,37 @@ async function handlePlacementTurn(state) {
             const parts = id.split("-"); 
             x = parseInt(parts[0], 10);
             y = parseInt(parts[1], 10);
-            console.log(`Coordonnées : x = ${x}, y = ${y}`);
     }
+
+    checkElfOnCell(x, y, state);
     
     gameState.elves[gameState.currentPlayer].push([x, y, false]); // false = not stuck
-    console.log("Added elf at position : ", x, y);
-    console.log(gameState.playerOrder[gameState.currentPlayer] + " player's elves :" + gameState.elves[gameState.currentPlayer]);
+    console.log(gameState.playerOrder[gameState.currentPlayerIndex] + " player's elves :" + gameState.elves[gameState.currentPlayer]); 
     
     // Add elf to the board
-    const cell = document.getElementById(`${x}-${y}`);
+    const cell = document.getElementById(`${x}-${y}`);   
     const elfImage = document.createElement("img");
-    elfImage.className = "lutin"; // Add a class to the image for styling
+    elfImage.id = `lutin-${x}-${y}`; // add an id for each lutin for the drag and drop
+    elfImage.className = "lutin"; 
+    elfImage.draggable = true;
 
-    console.log("currentPlayer : ", gameState.currentPlayerIndex);
+    console.log("currentPlayerIndex : ", gameState.currentPlayerIndex);
     switch (gameState.currentPlayerIndex) {
         case 0:
             elfImage.src = "images/lutin_vert.png";
             break;
         case 1:
-            elfImage.src = "images/lutin_rouge.png";
+            elfImage.src = "images/lutin_bleu.png";
             break;
         case 2:
             elfImage.src = "images/lutin_jaune.png";
             break;
         case 3:
-            elfImage.src = "images/lutin_bleu.png";
+            elfImage.src = "images/lutin_rouge.png";
             break;
     }
-    cell.append(elfImage); // Add the image to the cell
-    console.log("Added elf at position : ", x, y);
+    cell.appendChild(elfImage); // Add the image to the cell
+    elfImage.addEventListener('dragstart', dragStart);
 }
 
 
@@ -114,23 +116,34 @@ async function handlePlayingTurn(state) {
     //         const parts = id.split("-"); 
     //         const x = parseInt(parts[0], 10);
     //         const y = parseInt(parts[1], 10);
-    //         console.log(`Coordonnées : x = ${x}, y = ${y}`);
+    //         console.log('Coordonnées : x = ${x}, y = ${y}');
     // }
+
+    let x = 9999999;
+    let y = 9999999;
+    while(!checkElfOnCell(x, y, state) ) {
+    const clickedCell = await waitForClickOnCell();
+
+            const id = clickedCell.id; 
+            const parts = id.split("-"); 
+            x = parseInt(parts[0], 10);
+            y = parseInt(parts[1], 10);
+    }
+
+
 }
 
 function checkIfCellIsFree(x, y, state) {
     if(x < 0 || x > 6 || y < 0 || y > 6) {
-        console.log("Cell is out of the board : ", x, y);
         return null;
     }
 
     const elves = gameState.elves;
     console.log("Checking if cell is free on this position : ", x, y);
     
-    for (const playerId of Object.keys(elves)) {
-        for (const elf of elves[playerId]) {
+    for (const playerColour of Object.keys(elves)) {
+        for (const elf of elves[playerColour]) {
             const [thisElfX, thisElfY] = elf;
-            console.log("voila les coordonnées " + thisElfX + "-" + thisElfY);
             if(thisElfX === x && thisElfY === y) {
                 return false;
             }
@@ -141,7 +154,76 @@ function checkIfCellIsFree(x, y, state) {
     return true;
 }
 
-function checkElfOnCell(x, y, state) {}
+function checkElfOnCell(x, y, state) {
+    console.log("Checking if elf on cell : ", x, "-", y);
+    if(x < 0 || x > 6 || y < 0 || y > 6) {
+        return null;
+    }
+
+    // Check if there is an elf on the cell (x,y)
+    // If elf -> check if elf colour == currentPlayer colour
+    // return true if elf is on the cell and belongs to currentPlayer
+
+    for (const playerColour of Object.keys(state.elves)) {
+        for (const elf of state.elves[playerColour]) {
+            console.log("playerColour : ", playerColour); 
+            const [thisElfX, thisElfY] = elf;
+            if(thisElfX === x && thisElfY === y) {
+                return playerColour === state.currentPlayer; // true if elf belongs to currentPlayer
+            }
+        }
+    }
+}
+
+function checkIfElfCanMove(x, y, state) {
+    console.log('Checking if elf at (${x}, ${y}) can move...');
+
+    if (x < 0 || x >= 6 || y < 0 || y >= 6) {
+        console.log("Invalid coordinates.");
+        return false;
+    }
+
+    const directions = [
+        { dx: 0, dy: 1 }, 
+        { dx: 0, dy: -1 },
+        { dx: 1, dy: 0 }, 
+        { dx: -1, dy: 0 }  
+    ];
+
+    // Check if the elf is blocked in all directions
+    for (const { dx, dy } of directions) {
+        const newX = x + dx;
+        const newY = y + dy;
+
+        // For each direction, check if destination is within the board
+        if (newX < 0 || newX >= 6 || newY < 0 || newY >= 6) {
+            continue; // Go to next direction
+        }
+
+        // Check if bridge exists there
+        const bridgeExists = state.bridges.some(bridge => {
+            const [x1, y1, x2, y2] = bridge[0];
+            return (
+                (x1 === x && y1 === y && x2 === newX && y2 === newY) || (x1 === newX && y1 === newY && x2 === x && y2 === y)
+            );
+        });
+
+        if (!bridgeExists) {
+             continue; // No bridge -> go to next direction
+        }
+
+        // Check if the target cell is free
+        const isTargetCellFree = checkIfCellIsFree(newX, newY, state);
+
+        if (isTargetCellFree) {
+            console.log('Elf at (${x}, ${y}) can move to (${newX}, ${newY}).');
+            return true; // Can move
+        }
+    }
+
+    console.log('Elf at (${x}, ${y}) cannot move.');
+    return false; // Elf cannot move in any direction
+}
 
 async function waitForClickOnCell() {
     return new Promise((resolve) => {
@@ -158,20 +240,12 @@ async function waitForClickOnCell() {
         };
 
         document.querySelectorAll(".cell").forEach(cell => {
-            console.log("here");
             cell.addEventListener("click", handler);
-            console.log("hereeee");
         });
     }); 
 } 
 
 async function playTurn(state){
-
-        document.querySelectorAll(".cell").forEach(cell => {
-            console.log(cell.id);
-        });
-
-
         
         if(state.currentPhase === 'placementPhase') {
             
@@ -205,7 +279,7 @@ function checkForLoser(state) {
     // if ALL blocked -> add this player to deadPlayers
     if (allBlocked) {
         state.deadPlayers.push(state.currentPlayerIndex);
-        console.log(`Player ${currentColor} eliminated (all elves blocked!)`);
+        console.log('Player ${currentColor} eliminated (all elves blocked!)');
         // *Display a list of dead players
     }
 }
@@ -267,7 +341,7 @@ function checkIfGameFinished(state) {
             (_, index) => !state.deadPlayers.includes(index)
         );
         
-        alert(`Game over! Winner: ${winner}`);
+        alert('Game over! Winner: ${winner}');
         return true;
     }
     return false;
@@ -282,16 +356,16 @@ function updateBoardDisplay(state) {
     // Display elves
     Object.entries(state.elves).forEach(([color, elves]) => {
         elves.forEach(([x, y]) => {
-            const cell = document.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
-            cell.classList.add(`elf-${color}`);
+            const cell = document.querySelector('.cell[data-x="${x}"][data-y="${y}"]');
+            cell.classList.add('elf-${color}');
         });
     });
 
     // Display bridges (if any)
     state.bridges.forEach(bridge => {
         const [x1, y1, x2, y2] = bridge[0];
-        const cell1 = document.querySelector(`.cell[data-x="${x1}"][data-y="${y1}"]`);
-        const cell2 = document.querySelector(`.cell[data-x="${x2}"][data-y="${y2}"]`);
+        const cell1 = document.querySelector('.cell[data-x="${x1}"][data-y="${y1}"]');
+        const cell2 = document.querySelector('.cell[data-x="${x2}"][data-y="${y2}"]');
         cell1.classList.add('bridge');
         cell2.classList.add('bridge');
     });
@@ -300,6 +374,18 @@ function updateBoardDisplay(state) {
 function setNextTurn(state) {
     state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.playerOrder.length;
     console.log("New current player : ", state.currentPlayerIndex);
+}
+
+function checkPhase(state) {
+    let number_of_elves = {};
+    
+    for (const playerColour of Object.keys(gameState.elves)) {
+        number_of_elves[playerColour] = state.elves[playerColour].length;
+    }
+    if(number_of_elves['green'] == 4 && number_of_elves['blue'] == 4 && number_of_elves['yellow'] == 4 && number_of_elves['red'] == 4){
+        gameState.currentPhase = 'playingPhase';
+        return true
+    }   
 }
 
 async function pontuXL(state, playersOrder) {
@@ -313,7 +399,8 @@ async function pontuXL(state, playersOrder) {
         console.log("Turn n°", i);
         await playTurn(state);
         i++
-        //checkForLoser(state);
+        if(checkPhase(state)) break;
+        checkForLoser(state);
         //checkIfGameFinished(state);
         setNextTurn(state);
         // updateBoardDisplay(state);
@@ -337,6 +424,7 @@ document.getElementById("startgame").addEventListener("click", function() {
     }
     console.log("partie lancée");
     // Launch a new game
+    newGameInit(gameState);
     pontuXL(gameState);
 });
 
@@ -431,7 +519,7 @@ document.getElementById("startgame").addEventListener("click", function() {
 //             // Highlight visuel
 //             cell.classList.add('temp-selected');
 //             availableMoves.forEach(([mx, my]) => {
-//                 const moveCell = document.querySelector(`.cell[data-x="${mx}"][data-y="${my}"]`);
+//                 const moveCell = document.querySelector('.cell[data-x="${mx}"][data-y="${my}"]');
 //                 moveCell.classList.add('temp-available');
 //                 tempUI.highlightedCells.push(moveCell);
 //             });
@@ -462,8 +550,8 @@ document.getElementById("startgame").addEventListener("click", function() {
 //     // Affiche les lutins
 //     Object.entries(state.elves).forEach(([color, elves]) => {
 //         elves.forEach(([x, y]) => {
-//             const cell = document.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
-//             cell.classList.add(`elf-${color}`);
+//             const cell = document.querySelector('.cell[data-x="${x}"][data-y="${y}"]');
+//             cell.classList.add('elf-${color}');
 //         });
 //     });
 // }
@@ -478,7 +566,7 @@ document.getElementById("startgame").addEventListener("click", function() {
 // function showTempMessage(msg, type) {
 //     const feedback = document.getElementById('feedback');
 //     feedback.textContent = msg;
-//     feedback.className = `feedback ${type}`;
+//     feedback.className = 'feedback ${type}';
 //     setTimeout(() => feedback.className = 'feedback', 2000);
 // }
 

@@ -12,3 +12,11 @@
     max-height: 80%; 
     object-fit: contain; 
   }
+
+  .valid-cell {
+    border: 2px solid green;
+}
+
+.dragover {
+    background-color: lightgreen;
+}

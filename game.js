@@ -1,6 +1,6 @@
 //starting the game
-let startgame = false
-let tour = 0
+let startgame = false;
+let tour = 0;
 let matrix = [];
 
 const start = document.getElementById("startgame");
