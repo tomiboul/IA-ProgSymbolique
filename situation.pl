@@ -76,29 +76,35 @@ negative_infini(-100000000000).
     à utiliser dans le prédicat IA
 */
 %% cas de base 1 : profondeur arrivé à une feuille.
-max_n((ListeLutin, ListePont, OrdreJeu),JoueurActuel, 0, Score).
+max_n((ListeLutin, ListePont, OrdreJeu),JoueurActuel, 0, Score, NextScore, (ListeLutin, ListePont, OrdreJeu)).
     heuristique((ListeLutin, ListePont, OrdreJeu), Score).
 
 %%forme du score
 %%[(Vert, 5), (Rouge, 7), (Jaune, 2), (Bleu, 9)]
 
 %% cas de base 2 : on s arrête quand plus de lutins adverses.
-max_n((ListeLutin, ListePont, [JoueurActuel]),JoueurActuel, _, Score, NewScore). % (NewListeLutin, NewListePont, NewOrdreJeu):-
+max_n((ListeLutin, ListePont, [JoueurActuel]),JoueurActuel, _, Score, NextScore, (ListeLutin, ListePont, [JoueurActuel])).:-
     infini(X),
     changevecteur(Score, JoueurActuel, X, NewScore).
 
 %% cas de base 3 : le joueur qu on cherche à maximiser perds (on veut le faire gagner)
-max_n((ListeLutin, ListePont, Joueurs),JoueurActuel , _, Score, NewScore):-
+max_n((ListeLutin, ListePont, Joueurs),JoueurActuel , _, Score, NextScore, (ListeLutin, ListePont, Joueurs)):-
     not(member(JoueurActuel, Joueurs)),
     rotation([Couleur1|Reste], NouveauTourDeJoueur),
     negative_infini(X),
     changevecteur(Score, JoueurActuel, X, NewScore).
     
     
-max_n((ListeLutin, ListePont, OrdreJeu), JoueurActuel, Depth, Score, NextScore):-
+max_n((ListeLutin, ListePont, OrdreJeu), JoueurActuel, Depth, Score, NextScore, (NextListeLutin, NextListePont, NextOrdreJeu)):-
+    etatsPossibles((ListeLutin, ListePont,OrdreJeu),JoueurActuel, ListeEtat)
 
+    findall(((NewListeLutin, NewListePont, NewOrdreJeu), NewScore), 
+    (member((NewListeLutin, NewListePont, NewOrdreJeu), ListeEtat), max_n(Etat, NextJoueurActuel, Depth-1, NextScore, NewScore)), 
+    Scores),
 
-    heuristique((ListeLutin, ListePont, OrdreJeu), Score).
+     
+
+   
     
 
 
@@ -113,7 +119,7 @@ changevecteur([(Couleur1, Score)|ResteScore], Couleur2, NewScoreInteger, [(Coule
 /**
 * Renvoie les coups possibles à partir d'un état (in, in, out)
 */
-coupsPossibles((ListeLutin, ListePont, OrdreJeu), JoueurActuel, ListeEtat):-
+etatsPossibles((ListeLutin, ListePont, OrdreJeu), JoueurActuel, ListeEtat):-
     findall(
         (ListeLutinPossible, ListePontPossible, OrdreJeuPossible),
 
