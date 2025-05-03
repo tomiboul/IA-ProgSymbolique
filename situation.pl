@@ -83,7 +83,7 @@ max_n((ListeLutin, ListePont, OrdreJeu),JoueurActuel, 0, Score, NextScore, (List
 %%[(Vert, 5), (Rouge, 7), (Jaune, 2), (Bleu, 9)]
 
 %% cas de base 2 : on s arrête quand plus de lutins adverses.
-max_n((ListeLutin, ListePont, [JoueurActuel]),JoueurActuel, _, Score, NextScore, (ListeLutin, ListePont, [JoueurActuel])).:-
+max_n((ListeLutin, ListePont, [JoueurActuel]),JoueurActuel, _, Score, NextScore, (ListeLutin, ListePont, [JoueurActuel])):-
     infini(X),
     changevecteur(Score, JoueurActuel, X, NewScore).
 
@@ -95,22 +95,36 @@ max_n((ListeLutin, ListePont, Joueurs),JoueurActuel , _, Score, NextScore, (List
     changevecteur(Score, JoueurActuel, X, NewScore).
     
     
-max_n((ListeLutin, ListePont, OrdreJeu), JoueurActuel, Depth, Score, NextScore, (NextListeLutin, NextListePont, NextOrdreJeu)):-
-    etatsPossibles((ListeLutin, ListePont,OrdreJeu),JoueurActuel, ListeEtat)
+max_n((ListeLutin, ListePont, [P1,NextPlayer|ResteJoueurs]), JoueurActuel, Depth, Score, NextScore, (NextListeLutin, NextListePont, NextOrdreJeu)):-
+    etatsPossibles((ListeLutin, ListePont,OrdreJeu),JoueurActuel, ListeEtat),
 
-    findall(((NewListeLutin, NewListePont, NewOrdreJeu), NewScore), 
-    (member((NewListeLutin, NewListePont, NewOrdreJeu), ListeEtat), max_n(Etat, NextJoueurActuel, Depth-1, NextScore, NewScore)), 
+    %%récupère tous les scores des coups possibles
+    findall((NextEtat, NewScore), 
+    (member(NextEtat, ListeEtat), max_n(NextEtat, NextPlayer, Depth-1, NextScore, NewScore, _)), 
     Scores),
 
-     
+    negative_infini(X),
+    %%récupère l'état qui propose le meilleur score parmis tous ceux renvoyés par le findall
+    findBestMove(Scores, JoueurActuel, (([],[],[]), X), ((NextListeLutin, NextListePont, NextOrdreJeu), NextScore)).
 
-   
-    
+getScore([(JoueurActuel, S1), (J2,S2), (J3,S3), (J4,S4)], JoueurActuel, S1).
+getScore([(J1, S1), (JoueurActuel,S2), (J3,S3), (J4,S4)], JoueurActuel, S2).
+getScore([(J1, S1), (J2,S2), (JoueurActuel,S3), (J4,S4)], JoueurActuel, S3).
+getScore([(J1, S1), (J2,S2), (J3,S3), (JoueurActuel,S4)], JoueurActuel, S4).
+
+/*Renvoie le meilleur move à faire, et son score associé  (in, in, in, out) (fonctionnel)*/
+findBestMove([],_, (MeilleurEtat, MeilleurScore), (MeilleurEtat, MeilleurScore)).
+findBestMove([(Etat, Score)|Reste], JoueurActuel, (MeilleurEtatPrecedent, MeilleurScorePrecedent), (NewEtat, NewScore)):-
+    getScore(Score, JoueurActuel, WantedScore),
+    getScore(MeilleurScorePrecedent, JoueurActuel, MeilleurWantedScore),
+    (WantedScore >= MeilleurWantedScore)->
+    findBestMove(Reste, JoueurActuel, (Etat, Score),(NewEtat, NewScore));
+    findBestMove(Reste, JoueurActuel, (MeilleurEtatPrecedent, MeilleurScorePrecedent), (NewEtat, NewScore)).    
 
 
 
 /**
-*Change le vecteur de score avec la valeur et couleur donnée en entrée
+*Change le vecteur de score avec la valeur et couleur donnée en entrée (fonctionnel)
 */
 changevecteur([(Couleur, Score)|ResteScore], Couleur, NewScoreInteger, [(Couleur, NewScoreInteger)|ResteScore]).
 changevecteur([(Couleur1, Score)|ResteScore], Couleur2, NewScoreInteger, [(Couleur1,Score)|NewScorevecteur]):-

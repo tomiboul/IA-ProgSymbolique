@@ -59,10 +59,11 @@ deplaceLutin((Couleur, X, Y), (Couleur, NewX, NewY), ListeLutin, NewListeLutin):
     NewListeLutin = [(Couleur, NewX, NewY)|TempNewListeLutin], !.*/
 
 
-%%CHANGER RAJOUTER SI YA PAS DE PONT ON NE CALCULE PAS UN DEPLACEMENT DE LUTIN
-deplaceLutin((Couleur, X, Y), (Couleur, NewX, NewY), ListeLutin, NewListeLutin) :-
+
+deplaceLutin((Couleur, X, Y), (Couleur, NewX, NewY), ListePont, ListeLutin, NewListeLutin) :-
     member((Couleur, X, Y), ListeLutin),
     deplaceCaseACote(X, Y, NewX, NewY),
+    (member((X,Y)-(NewX,NewY), ListePont);member((NewX,NewY)-(X,Y), ListePont)),
     \+ member((_, NewX, NewY), ListeLutin),
     suppLutin((Couleur, X, Y), ListeLutin, TempNewListeLutin),
     NewListeLutin = [(Couleur, NewX, NewY)|TempNewListeLutin].
