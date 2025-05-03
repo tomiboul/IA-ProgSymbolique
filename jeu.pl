@@ -1,4 +1,4 @@
-:- module(jeu, [ajoutLutin/3, deplaceLutin/4, suppLutin/3 , deplacePont/4, suppPont/3, pontExistant/2]).
+:- module(jeu, [ajoutLutin/3, deplaceLutin/5, suppLutin/3 , deplacePont/4, suppPont/3, pontExistant/2]).
 
 
 /*################## Les couleurs ####################*/
@@ -133,6 +133,7 @@ deplacePont(((X1, Y1)-(X2,Y2)), ((NewX1, NewY1)-(NewX2,NewY2)), ListePont, NewLi
     not(member(((NewX1, NewY1)-(NewX2,NewY2)), ListePont)), %% on va vérifier qu il n existe pas deja de pont a cette position
     suppPont(((X1, Y1)-(X2,Y2)), ListePont, TempNewListePont),
     NewListePont = [((NewX1, NewY1)-(NewX2,NewY2))|TempNewListePont].
+
     
 
 suppPont(((X1, Y1)-(X2,Y2)), ListePont, NewListePont):- 
