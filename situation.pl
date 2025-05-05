@@ -84,26 +84,22 @@ negative_infini(-100000000000).
 %% cas de base 2 : on s arrête quand plus de lutins adverses.
 max_n((ListeLutin, ListePont, [JoueurActuel]),JoueurActuel, _, Score, NextScore, (ListeLutin, ListePont, [JoueurActuel])):-
     infini(X),
-    changevecteur(Score, JoueurActuel, X, NewScore).
+    changevecteur(Score, JoueurActuel, X, NewScore),!.
 
 %% cas de base 3 : le joueur qu on cherche à maximiser perds (on veut le faire gagner)
 max_n((ListeLutin, ListePont, Joueurs),JoueurActuel , Depth, Score, NextScore, (ListeLutin, ListePont, Joueurs)):-
     not(member(JoueurActuel, Joueurs)),
     rotation(Joueurs, NouveauTourDeJoueur),
     negative_infini(X),
-    changevecteur(Score, JoueurActuel, X, NextScore).
+    changevecteur(Score, JoueurActuel, X, NextScore),!.
     
 %% cas de base 1 : profondeur arrivé à une feuille.
 max_n((ListeLutin, ListePont, OrdreJeu),JoueurActuel, 0, _, NextScore, (ListeLutin, ListePont, OrdreJeu)):-
-    heuristique((ListeLutin, ListePont, OrdreJeu), [(vert,0),(bleu,0),(rouge,0),(jaune,0)], NextScore).
+    heuristique((ListeLutin, ListePont, OrdreJeu), [(vert,0),(bleu,0),(rouge,0),(jaune,0)], NextScore),!.
     
 max_n((ListeLutin, ListePont, [JoueurActuel,NextPlayer|ResteJoueurs]), JoueurActuel, Depth, Score, NextScore, (NextListeLutin, NextListePont, NextOrdreJeu)):-
     etatsPossibles((ListeLutin, ListePont,[JoueurActuel, NextPlayer|ResteJoueurs]),JoueurActuel, ListeEtat),
-    writeln("ListeEtat" + ListeEtat),
-    writeln("ListeLutin : "+ListeLutin),
-    writeln("ListePont : "+ListePont),
-    writeln("Liste ordre : "+[JoueurActuel, NextPlayer|ResteJoueurs]),
-    writeln("Joueur actue l : "+JoueurActuel),
+    
     NewDepth is Depth -1,
     %%récupère tous les scores des coups possibles
     findall((NextEtat, NewScore), 
@@ -112,7 +108,6 @@ max_n((ListeLutin, ListePont, [JoueurActuel,NextPlayer|ResteJoueurs]), JoueurAct
     negative_infini(X),
     %%récupère l'état qui propose le meilleur score parmis tous ceux renvoyés par le findall
 
-    writeln(Scores),
     findBestMove(Scores, JoueurActuel, (([],[],[]), [(vert, X), (bleu, X), (rouge, X), (jaune,X)]), ((NextListeLutin, NextListePont, NextOrdreJeu), NextScore)), !.
 
 
