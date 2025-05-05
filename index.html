@@ -1,41 +1,59 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Pontu</title>
-  
+  <meta charset="utf-8">  
   <link rel="stylesheet" href="home.css"  type= "text/css" media="screen" charset="utf-8">
   <link rel="stylesheet" href="bridge.css"  type= "text/css" media="screen" charset="utf-8">
   <link rel="stylesheet" href="draganddrop.css"  type= "text/css" media="screen" charset="utf-8">
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
 
 
   
 </head>
 <body>  
-  <div class="titre">
-    <h1>Pontu</h1>
-    <button id="startgame">Nouvelle partie</button>
+  <div class="title-container">
+    <img src="./images/pontu-decorations.svg" alt="pontu title" class="title">
     <p id="Tour"></p>
+  </div>    
+  
+  <button id="startgame">Nouvelle partie</button>
+
+  <!-- <div id="lutin-container" style="display: flex; flex-wrap: wrap;"></div> -->
+
+  <div class="game-container">
+    <!-- Left container : -->
+    <div class="grid-element" id="left-container">
+      <!--<form id="position">
+            <input type="text" name="position" placeholder="Entrez les coordonnées d'un lutin" pattern="^\d+-\d+$" required>  
+            <input type="submit" value="Submit">
+          </form> -->
+          <div class="ibou">Ibou le hibou connait tout de ce jeu...</div>
+          <form class="chatbot-form">
+          <div class="chat-field">
+            <input class="chat-question" type="text" id="userMessage" name="chatbot" placeholder="Posez-lui une question" required>  
+            <input class="chat-send" type="submit" id="sendMessage" value="🦉">
+          </div>
+          </form>
+  
+      <!-- <div id="messages" style="border: 1px solid #ccc; padding: 10px; max-height: 200px; overflow-y: auto;"></div> -->
+    </div>
+
+
+    <!-- Middle container : -->
+     <div class="grid-element" id="middle-container">
+        <div id="board"></div>
+     </div>
+
+    <!-- Right container : -->
+    <div class="grid-element" id="right-container">
+      <button id="confirm-button">Confirm</button>
+
+    </div>
+    
   </div>
-  <div id="lutin-container" style="display: flex; flex-wrap: wrap;"></div>
-
-  <form id="position">
-    <input type="text" name="position" placeholder="Entrez les coordonnées d'un lutin" pattern="^\d+-\d+$" required>  
-    <input type="submit" value="Submit">
-  </form>
-  <form id="chatbot">
-    <input type="text" id="userMessage" name="chatbot" placeholder="Entrez vos questions" required>  
-    <input type="submit" id="sendMessage" value="Envoyer au chatbot">
-  </form>
-
-  <div id="messages" style="border: 1px solid #ccc; padding: 10px; max-height: 200px; overflow-y: auto;"></div>
 
   <script src="server.js"></script>
-
-  <div id="board"></div>
-
-  <button id="confirm-button">Confirm</button>
-
   <script src="board.js"></script>
   <script src="game2.js"></script>
 

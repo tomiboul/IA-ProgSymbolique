@@ -1,12 +1,19 @@
 body {
   padding: 40px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 #board {
-    width: 70vh;
-    height: 70vh;
-    max-width: 800px;
-    max-height: 800px;
+    /* width:  60vh;
+    height: 60vh; */
+
+    height: 36vw;
+    width:  36vw;
+
+    /* transform: translateX(calc(50vw - 30vh - 40px)); Half of screen width - half of board width - body padding */
 
     display: grid;
     grid-template-columns: repeat(5, 2fr 1fr) 2fr; /* 6 cases + 5 ponts horizontaux = 11 */

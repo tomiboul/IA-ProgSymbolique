@@ -58,10 +58,15 @@ items.forEach(item => {
     item.addEventListener('dragstart', dragStart);
 });
 
+
+let originCell = null;
+
+
 function dragStart(e) {
     e.dataTransfer.setData('text/plain', e.target.id);
+    originCell = e.target.parentElement;
     setTimeout(() => {
-        e.target.classList.add('hide');
+        // e.target.classList.add('hide');
     }, 0);
 }
 
@@ -78,7 +83,6 @@ cells.forEach(cell => {
 });
 
 
-
 function dragEnter(e) {
     e.preventDefault();
     e.target.classList.add('drag-over');
@@ -93,18 +97,63 @@ function dragLeave(e) {
     e.target.classList.remove('drag-over');
 }
 
+// function drop(e) {
+//     e.target.classList.remove('drag-over');
+
+//     // get the draggable element
+//     const id = e.dataTransfer.getData('text/plain');
+//     const draggable = document.getElementById(id);
+
+//     // add it to the drop target
+//     e.target.appendChild(draggable);
+
+//     // display the draggable element
+//     draggable.classList.remove('hide');
+// }
+
 function drop(e) {
+    e.preventDefault();
     e.target.classList.remove('drag-over');
 
-    // get the draggable element
     const id = e.dataTransfer.getData('text/plain');
     const draggable = document.getElementById(id);
 
-    // add it to the drop target
+    const dropTarget = e.target.closest('.cell');
+
+        if (dropTarget.children.length === 0 || !dropTarget) { //si y'a pas de lutin sur la case
+            dropTarget.appendChild(draggable); //on drop le lutin
+        } else {
+            originCell.appendChild(draggable); //sinon il retourne a la case d'origine
+        }
+
+ 
+    // Ajoute le lutin dans la cellule cible
     e.target.appendChild(draggable);
-
-    // display the draggable element
     draggable.classList.remove('hide');
+
+    // Récupère les coordonnées de la cellule cible
+    const targetId = e.target.id; // ex: "3-2"
+    const [xStr, yStr] = targetId.split("-");
+    const x = parseInt(xStr) - 1;
+    const y = parseInt(yStr) - 1;
+
+    // Utilise le joueur courant comme couleur
+    const color = gameState.currentPlayer;
+    const elfList = gameState.elves[color];
+
+    // Met à jour ou ajoute l'elf
+    console.log("iddddd",id);
+    const existingIndex = elfList.findIndex(elf => elf.id === id);
+
+    const newElf = { id, x, y, stuck: false };
+
+    if (existingIndex !== -1) {
+        elfList[existingIndex] = newElf;
+    } else {
+        elfList.push(newElf);
+    }
+
+    console.log(`Nouvelle position pour ${color} :`, elfList);
+    console.log("elf =", 
+    );
 }
-
-
