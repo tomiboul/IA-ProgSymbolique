@@ -63,12 +63,39 @@ let originCell = null;
 
 
 function dragStart(e) {
-    e.dataTransfer.setData('text/plain', e.target.id);
+    const id = e.target.id;
+
+    // Récupérer les coordonnées de lutin à partir de l'ID
+    const [x, y] = id.split("-").slice(1, 3).map(Number); // Assumons que l'ID est sous forme "green-1-2"
+    const color = gameState.currentPlayer;
+
+    // Récupérer la liste des lutins du joueur courant
+    const elves = gameState.elves[color];
+
+    // Vérifier si le lutin existe déjà à ces coordonnées et appartient au joueur courant
+    const elfAtPosition = elves.find(elf => elf.x === x - 1 && elf.y === y - 1); // -1 pour ajuster à la coordonnée zéro
+
+    if (!elfAtPosition) {
+        // Si aucun lutin n'est trouvé sur cette position, ou le lutin n'appartient pas au joueur courant, on empêche le drag
+        console.warn(`Ce n'est pas votre lutin à la position ${x}, ${y}!`);
+        console.log("Couleur du joueur :", color);
+        console.log("Elves : ", elves);
+        console.log("x: ",x," y: ",y);
+        console.log("ElfAtPosition : ", elfAtPosition);
+        console.log(gameState.elves);
+        e.preventDefault(); // Annule le drag
+        return;
+    }
+
+    // Si c'est bien le lutin du joueur courant, on permet le drag
+    e.dataTransfer.setData('text/plain', id);
     originCell = e.target.parentElement;
     setTimeout(() => {
-        // e.target.classList.add('hide');
+        // e.target.classList.add('hide'); // Optionnel: on peut cacher l'élément temporairement si nécessaire
     }, 0);
 }
+
+
 
 
 
