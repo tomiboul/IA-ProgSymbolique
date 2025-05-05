@@ -94,12 +94,16 @@ max_n((ListeLutin, ListePont, Joueurs),JoueurActuel , Depth, Score, NextScore, (
     changevecteur(Score, JoueurActuel, X, NextScore).
     
 %% cas de base 1 : profondeur arrivé à une feuille.
-max_n((ListeLutin, ListePont, OrdreJeu),JoueurActuel, 0, _, NextScore, (NewListeLutin, NewListePont, NewOrdreJeu)):-
-    write("ON PASSE PAR L HEURISTIQUE"),
+max_n((ListeLutin, ListePont, OrdreJeu),JoueurActuel, 0, _, NextScore, (ListeLutin, ListePont, OrdreJeu)):-
     heuristique((ListeLutin, ListePont, OrdreJeu), [(vert,0),(bleu,0),(rouge,0),(jaune,0)], NextScore).
     
-max_n((ListeLutin, ListePont, [P1,NextPlayer|ResteJoueurs]), JoueurActuel, Depth, Score, NextScore, (NextListeLutin, NextListePont, NextOrdreJeu)):-
-    etatsPossibles((ListeLutin, ListePont,OrdreJeu),JoueurActuel, ListeEtat),
+max_n((ListeLutin, ListePont, [JoueurActuel,NextPlayer|ResteJoueurs]), JoueurActuel, Depth, Score, NextScore, (NextListeLutin, NextListePont, NextOrdreJeu)):-
+    etatsPossibles((ListeLutin, ListePont,[JoueurActuel, NextPlayer|ResteJoueurs]),JoueurActuel, ListeEtat),
+    writeln("ListeEtat" + ListeEtat),
+    writeln("ListeLutin : "+ListeLutin),
+    writeln("ListePont : "+ListePont),
+    writeln("Liste ordre : "+[JoueurActuel, NextPlayer|ResteJoueurs]),
+    writeln("Joueur actue l : "+JoueurActuel),
     NewDepth is Depth -1,
     %%récupère tous les scores des coups possibles
     findall((NextEtat, NewScore), 
@@ -107,9 +111,9 @@ max_n((ListeLutin, ListePont, [P1,NextPlayer|ResteJoueurs]), JoueurActuel, Depth
     Scores),
     negative_infini(X),
     %%récupère l'état qui propose le meilleur score parmis tous ceux renvoyés par le findall
-    findBestMove(Scores, JoueurActuel, (([],[],[]), [(vert, X), (bleu, X), (rouge, X), (jaune,X)]), ((NextListeLutin, NextListePont, NextOrdreJeu), NextScore)).
 
-
+    writeln(Scores),
+    findBestMove(Scores, JoueurActuel, (([],[],[]), [(vert, X), (bleu, X), (rouge, X), (jaune,X)]), ((NextListeLutin, NextListePont, NextOrdreJeu), NextScore)), !.
 
 
 getScore([(JoueurActuel, S1), (J2,S2), (J3,S3), (J4,S4)], JoueurActuel, S1).
@@ -143,8 +147,6 @@ changevecteur([(Couleur1, Score)|ResteScore], Couleur2, NewScoreInteger, [(Coule
 */
 etatsPossibles((ListeLutin, ListePont, OrdreJeu), JoueurActuel, ListeEtat):-
     rotation(OrdreJeu, OrdreJeuPossible),
-    writeln(OrdreJeu),
-    writeln(OrdreJeuPossible),
     findall(
         (ListeLutinPossible, ListePontPossible, OrdreJeuPossible),
         (deplaceLutin((JoueurActuel, X, Y), (JoueurActuel, X1, Y1),ListePont, ListeLutin, ListeLutinPossible),
