@@ -410,6 +410,11 @@ async function pontuXL(state, playersOrder) {
     //...
 }
 
+function deleteElvesFromDOM() {
+    const elements = document.querySelectorAll('lutin');
+    elements.forEach(elf => elf.remove());
+}
+
 const startButton = document.getElementById("startgame");
 const confirmButton = document.getElementById("confirm-button");
 
@@ -424,6 +429,7 @@ document.getElementById("startgame").addEventListener("click", function() {
     }
     console.log("partie lancée");
     // Launch a new game
+    deleteElvesFromDOM();
     newGameInit(gameState);
     pontuXL(gameState);
 });
