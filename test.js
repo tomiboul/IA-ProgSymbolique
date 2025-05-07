@@ -20,7 +20,7 @@ const gameState = {
     },
 
     currentPhase: 'placementPhase',
-    deadPlayers: [],
+    deadPlayersIndex: [],
 
     generateAllBridges(gridSize) {
         const bridges = [];
