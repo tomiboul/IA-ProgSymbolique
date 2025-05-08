@@ -81,42 +81,89 @@ negative_infini(-100000000000).
     à utiliser dans le prédicat IA
 */
 
-%% cas de base 2 : on s arrête quand plus de lutins adverses.
-max_n((ListeLutin, ListePont, [JoueurActuel]),JoueurActuel, _, Score, NextScore, (ListeLutin, ListePont, [JoueurActuel])):-
+%% cas de base 1 : on s arrête quand plus de lutins adverses.
+max_n((ListeLutin, ListePont, OrdreJeu),JoueurActuel, _, Score, NextScore, _, _,(ListeLutin, ListePont, [JoueurActuel])):-
+    plusLutinsAdverses(ListeLutin, ListePont, JoueurActuel),
     infini(X),
-    changevecteur(Score, JoueurActuel, X, NewScore),!.
+    changevecteur(Score, JoueurActuel, X, NextScore),!.
 
-%% cas de base 3 : le joueur qu on cherche à maximiser perds (on veut le faire gagner)
-max_n((ListeLutin, ListePont, Joueurs),JoueurActuel , Depth, Score, NextScore, (ListeLutin, ListePont, Joueurs)):-
+%% cas de base 2 : le joueur qu on cherche à maximiser perds (on veut le faire gagner)
+max_n((ListeLutin, ListePont, Joueurs),JoueurActuel , Depth, Score, NextScore, _, _, (ListeLutin, ListePont, Joueurs)):-
     not(member(JoueurActuel, Joueurs)),
     rotation(Joueurs, NouveauTourDeJoueur),
     negative_infini(X),
     changevecteur(Score, JoueurActuel, X, NextScore),!.
     
-%% cas de base 1 : profondeur arrivé à une feuille.
-max_n((ListeLutin, ListePont, OrdreJeu),JoueurActuel, 0, _, NextScore, (ListeLutin, ListePont, OrdreJeu)):-
+%% cas de base 3 : profondeur arrivé à une feuille.
+max_n((ListeLutin, ListePont, OrdreJeu),JoueurActuel, 0, _, NextScore, _, CurrentBest, (ListeLutin, ListePont, OrdreJeu)):-
     heuristique((ListeLutin, ListePont, OrdreJeu), [(vert,0),(bleu,0),(rouge,0),(jaune,0)], NextScore),!.
     
-max_n((ListeLutin, ListePont, [JoueurActuel,NextPlayer|ResteJoueurs]), JoueurActuel, Depth, Score, NextScore, (NextListeLutin, NextListePont, NextOrdreJeu)):-
-    etatsPossibles((ListeLutin, ListePont,[JoueurActuel, NextPlayer|ResteJoueurs]),JoueurActuel, ListeEtat),
-    
+max_n((ListeLutin, ListePont, [JoueurActuel,NextPlayer|ResteJoueurs]), JoueurActuel, Depth, Score, NextScore, Bornes, none, (NextListeLutin, NextListePont, NextOrdreJeu)):-
+    etatsPossibles((ListeLutin, ListePont,[JoueurActuel, NextPlayer|ResteJoueurs]),JoueurActuel, [PremierEtat|ResteEtat]),
+
     NewDepth is Depth -1,
+    max_n(PremierEtat, NextPlayer, NewDepth, Score, NewSinit, _, _,CurrentEtat),
+    %%writeln("AAAAAAAAAAAH"),
+    %%writeln(CurrentBest + "est comparé à" + NewSinit),
+    %%writeln(InitBornes + "est comparé à" + NewSinit),
+    InitBornes = NewSinit,
+    CurrentBest = NewSinit,
+    
     %%récupère tous les scores des coups possibles
     findall((NextEtat, NewScore), 
-    (member(NextEtat, ListeEtat), max_n(NextEtat, NextPlayer, NewDepth, Score, NewScore, _)), 
+    (member(NextEtat, ResteEtat), 
+    getScore(Score, JoueurActuel, S), 
+    getScore(InitBornes, JoueurActuel, B),
+
+    ((S<B)->(changevecteur(InitBornes, JoueurActuel, S, NewBornes),max_n(NextEtat, NextPlayer, NewDepth, Score, NewScore, NewBornes, CurrentBest, _)); 
+    CurrentBest = Score)), 
+    Scores),
+
+    negative_infini(X),
+    %%récupère l'état qui propose le meilleur score parmis tous ceux renvoyés par le findall
+    findBestMove(Scores, JoueurActuel, (CurrentEtat, CurrentBest), ((NextListeLutin, NextListePont, NextOrdreJeu), NextScore)), !.
+
+max_n((ListeLutin, ListePont, [JoueurActuel,NextPlayer|ResteJoueurs]), JoueurActuel, Depth, Score, NextScore, Bornes, CurrentBest, (NextListeLutin, NextListePont, NextOrdreJeu)):-
+    etatsPossibles((ListeLutin, ListePont,[JoueurActuel, NextPlayer|ResteJoueurs]),JoueurActuel, ListeEtat),
+    NewDepth is Depth -1,
+
+    %%récupère tous les scores des coups possibles
+    
+    findall((NextEtat, NewScore), 
+    (member(NextEtat, ListeEtat), 
+    getScore(Score, JoueurActuel, S), 
+    getScore(Bornes, JoueurActuel, B), 
+    ((S<B)->(changevecteur(Bornes, JoueurActuel, S, NewBornes), max_n(NextEtat, NextPlayer, NewDepth, Score, NewScore, NewBornes, CurrentBest, _));CurrentBest = Score)), 
     Scores),
     negative_infini(X),
     %%récupère l'état qui propose le meilleur score parmis tous ceux renvoyés par le findall
-
     findBestMove(Scores, JoueurActuel, (([],[],[]), [(vert, X), (bleu, X), (rouge, X), (jaune,X)]), ((NextListeLutin, NextListePont, NextOrdreJeu), NextScore)), !.
-
 
 getScore([(JoueurActuel, S1), (J2,S2), (J3,S3), (J4,S4)], JoueurActuel, S1).
 getScore([(J1, S1), (JoueurActuel,S2), (J3,S3), (J4,S4)], JoueurActuel, S2).
 getScore([(J1, S1), (J2,S2), (JoueurActuel,S3), (J4,S4)], JoueurActuel, S3).
 getScore([(J1, S1), (J2,S2), (J3,S3), (JoueurActuel,S4)], JoueurActuel, S4).
 
-
+plusLutinsAdverses([], _, _).
+plusLutinsAdverses([(CouleurLutin, X, Y)|ResteLutin], ListePont, Couleur):-
+    CouleurLutin \= Couleur,
+    X1 is X+1,
+    not(member((X,Y)-(X1,Y),ListePont)),
+    Y1 is Y+1,
+    not(member((X,Y)-(X,Y1),ListePont)),
+    X2 is X-1,
+    not(member((X2,Y)-(X,Y),ListePont)),
+    Y2 is Y-1,
+    not(member((X,Y2)-(X,Y),ListePont)),
+    plusLutinsAdverses(ResteLutin, ListePont, Couleur).
+    
+    
+plusLutinsAdverses([(CouleurLutin, _, _)|Reste], ListePont, Couleur) :-
+    CouleurLutin == Couleur,
+    plusLutinsAdverses(Reste, ListePont, Couleur).
+  
+exec_ia(NextEtat, NextScore):-max_n(
+    ([(bleu, 1, 1), (vert, 5, 5), (bleu,2,3), (rouge,4,5),(jaune,2,5)], [(1,1)-(2,1),(1,2)-(2,2),(1,3)-(1,4),(1,3)-(2,3),(1,4)-(1,5),(1,4)-(2,4),(1,5)-(1,6),(1,5)-(2,5),(1,6)-(2,6),(2,1)-(2,2),(2,1)-(3,1),(2,2)-(2,3),(2,2)-(3,2),(2,3)-(2,4),(2,6)-(3,6),(3,1)-(3,2),(3,1)-(4,1),(3,2)-(4,2),(3,4)-(3,5),(3,4)-(4,4),(3,5)-(3,6),(3,5)-(4,5),(4,1)-(5,1),(4,2)-(4,3),(4,2)-(5,2),(4,3)-(5,3),(4,4)-(4,5),(4,4)-(5,4),(4,5)-(4,6),(4,6)-(5,6),(5,2)-(6,2),(5,3)-(5,4),(5,3)-(6,3),(5,4)-(5,5),(5,4)-(6,4),(5,5)-(5,6),(5,5)-(6,5),(5,6)-(6,6),(6,1)-(6,2),(6,2)-(6,3)], [bleu, vert, rouge, jaune]), bleu, 4, [(vert,0),(bleu,0),(rouge,0),(jaune,0)], NextScore,[(rouge, 10000000), (jaune, 10000000), (vert,10000000), (bleu, 10000000)], none, NextEtat).
 
 
 /*Renvoie le meilleur move à faire, et son score associé  (in, in, in, out) (fonctionnel)*/
@@ -189,7 +236,7 @@ heuristique((ListeLutin, ListePont, [Couleur|Reste]), Scores, FinalScores):-
     perdPointLutinAdverse(ListeLutin, (Couleur, S), NewScore),
     gagnePointMesJoueurs(ListeLutin, (Couleur, NewScore), NewNewScore),
     gagnePointMesPontsAutour(ListeLutin, (Couleur, NewNewScore), ListePont, NewNewNewScore),
-
+    
     changevecteur(Scores, Couleur, NewNewNewScore, NewScores),
     heuristique((ListeLutin, ListePont, Reste), NewScores, FinalScores).
     
@@ -209,7 +256,7 @@ perdPointLutinAdverse([(CouleurLutin, _, _)|Reste], (Couleur, Score), ScoreFinal
 perdPointLutinAdverseAcc([], (Couleur, Score), ScoreFinal, Acc ):-
     ScoreFinal is Score - Acc.
 perdPointLutinAdverseAcc([(CouleurLutin, _, _)|Reste], (Couleur, Score), Result, Acc ):-
-    (CouleurLutin = Couleur -> NewAcc is Acc ; NewAcc is Acc + 8),
+    (CouleurLutin = Couleur -> NewAcc is Acc ; NewAcc is Acc + 4),
     perdPointLutinAdverseAcc(Reste, (Couleur, Score), Result, NewAcc ).
 
 
