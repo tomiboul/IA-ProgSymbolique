@@ -20,7 +20,7 @@ const gameState = {
     },
 
     currentPhase: 'placementPhase',
-    deadPlayers: [],
+    deadPlayersIndex: [],
 
     generateAllBridges(gridSize) {
         const bridges = [];
@@ -139,7 +139,7 @@ function checkIfCellIsFree(x, y, state) {
     }
 
     const elves = gameState.elves;
-    console.log("Checking if cell is free on this position : ", x, y);
+    // console.log("Checking if cell is free on this position : ", x, y);
     
     for (const playerColour of Object.keys(elves)) {
         for (const elf of elves[playerColour]) {
@@ -150,12 +150,12 @@ function checkIfCellIsFree(x, y, state) {
         }
     }
     
-    console.log("Cell is free on this position : ", x, y);
+    // console.log("Cell is free on this position : ", x, y);
     return true;
 }
 
 function checkElfOnCell(x, y, state) {
-    console.log("Checking if elf on cell : ", x, "-", y);
+    // console.log("Checking if elf on cell : ", x, "-", y);
     if(x < 0 || x > 6 || y < 0 || y > 6) {
         return null;
     }
@@ -166,7 +166,7 @@ function checkElfOnCell(x, y, state) {
 
     for (const playerColour of Object.keys(state.elves)) {
         for (const elf of state.elves[playerColour]) {
-            console.log("playerColour : ", playerColour); 
+            // console.log("playerColour : ", playerColour); 
             const [thisElfX, thisElfY] = elf;
             if(thisElfX === x && thisElfY === y) {
                 return playerColour === state.currentPlayer; // true if elf belongs to currentPlayer
@@ -176,10 +176,10 @@ function checkElfOnCell(x, y, state) {
 }
 
 function checkIfElfCanMove(x, y, state) {
-    console.log('Checking if elf at (${x}, ${y}) can move...');
+    // console.log('Checking if elf at (${x}, ${y}) can move...');
 
     if (x < 0 || x >= 6 || y < 0 || y >= 6) {
-        console.log("Invalid coordinates.");
+        // console.log("Invalid coordinates.");
         return false;
     }
 
@@ -216,12 +216,12 @@ function checkIfElfCanMove(x, y, state) {
         const isTargetCellFree = checkIfCellIsFree(newX, newY, state);
 
         if (isTargetCellFree) {
-            console.log('Elf at (${x}, ${y}) can move to (${newX}, ${newY}).');
+            // console.log('Elf at (${x}, ${y}) can move to (${newX}, ${newY}).');
             return true; // Can move
         }
     }
 
-    console.log('Elf at (${x}, ${y}) cannot move.');
+    // console.log('Elf at (${x}, ${y}) cannot move.');
     return false; // Elf cannot move in any direction
 }
 
@@ -269,16 +269,16 @@ function checkForLoser(state) {
     const currentElves = state.elves[currentColor];
 
     // If player already eliminated -> ignore
-    if (state.deadPlayers.includes(state.currentPlayerIndex)) {
+    if (state.deadPlayersIndex.includes(state.currentPlayerIndex)) {
         return;
     }
 
     // Check if ALL this player's elves are blocked 
     const allBlocked = currentElves.every(([x, y]) => isElfBlocked(x, y, state));
 
-    // if ALL blocked -> add this player to deadPlayers
+    // if ALL blocked -> add this player to deadPlayersIndex
     if (allBlocked) {
-        state.deadPlayers.push(state.currentPlayerIndex);
+        state.deadPlayersIndex.push(state.currentPlayerIndex);
         console.log('Player ${currentColor} eliminated (all elves blocked!)');
         // *Display a list of dead players
     }
@@ -331,14 +331,14 @@ function isElfBlocked(x, y, state) {
 
 function checkIfGameFinished(state) {
     // Amount of players alive
-    const activePlayers = state.playerOrder.length - state.deadPlayers.length;
+    const activePlayers = state.playerOrder.length - state.deadPlayersIndex.length;
     
     if (activePlayers <= 1) {
         state.currentPhase = 'finished';
         
         // Find the winner
         const winner = state.playerOrder.find(
-            (_, index) => !state.deadPlayers.includes(index)
+            (_, index) => !state.deadPlayersIndex.includes(index)
         );
         
         alert('Game over! Winner: ${winner}');
@@ -372,8 +372,16 @@ function updateBoardDisplay(state) {
 }
 
 function setNextTurn(state) {
+    // Set next player index
     state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.playerOrder.length;
-    console.log("New current player : ", state.currentPlayerIndex);
+
+    // Set next player colour
+    state.currentPlayer = state.playerOrder[state.currentPlayerIndex];
+    
+
+    console.log("(SetNextTurn) New current player index  : ", state.currentPlayerIndex);
+    console.log("(SetNextTurn) New current player colour : ", state.currentPlayer);
+
 }
 
 function checkPhase(state) {
@@ -410,6 +418,11 @@ async function pontuXL(state, playersOrder) {
     //...
 }
 
+function deleteElvesFromDOM() {
+    const elements = document.querySelectorAll('lutin');
+    elements.forEach(elf => elf.remove());
+}
+
 const startButton = document.getElementById("startgame");
 const confirmButton = document.getElementById("confirm-button");
 
@@ -424,6 +437,7 @@ document.getElementById("startgame").addEventListener("click", function() {
     }
     console.log("partie lancée");
     // Launch a new game
+    deleteElvesFromDOM();
     newGameInit(gameState);
     pontuXL(gameState);
 });

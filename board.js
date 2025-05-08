@@ -72,17 +72,28 @@ function dragStart(e) {
     // Récupérer la liste des lutins du joueur courant
     const elves = gameState.elves[color];
 
-    // Vérifier si le lutin existe déjà à ces coordonnées et appartient au joueur courant
-    const elfAtPosition = elves.find(elf => elf.x === x - 1 && elf.y === y - 1); // -1 pour ajuster à la coordonnée zéro
+    
 
+    // Vérifier si le lutin existe déjà à ces coordonnées et appartient au joueur courant
+    // const elfAtPosition = elves.find(elf => elf[0] === x - 1 && elf[1] === y - 1); // -1 pour ajuster à la coordonnée zéro
+
+    let elfAtPosition = null;
+
+    console.log("Dans dragStart(), gameState.currentPlayer = ", gameState.currentPlayer, " of type : ", typeof(gameState.currentPlayer));
+    console.log("Dans dragStart(), gameState.elves = ", gameState.elves);
+    console.log("Dans dragStart(), elves[gameState.currentPlayer] = ", elves[gameState.currentPlayer]);
+
+    for(const elf of Object.values(elves)){
+        console.log("Nouvel elf !!! : ", elf);
+        if (elf[0] === x && elf[1] === y) {
+            elfAtPosition = elf;
+        }
+    }
+
+    console.log("elfAtPosition = ", elfAtPosition);
     if (!elfAtPosition) {
         // Si aucun lutin n'est trouvé sur cette position, ou le lutin n'appartient pas au joueur courant, on empêche le drag
         console.warn(`Ce n'est pas votre lutin à la position ${x}, ${y}!`);
-        console.log("Couleur du joueur :", color);
-        console.log("Elves : ", elves);
-        console.log("x: ",x," y: ",y);
-        console.log("ElfAtPosition : ", elfAtPosition);
-        console.log(gameState.elves);
         e.preventDefault(); // Annule le drag
         return;
     }
@@ -94,6 +105,7 @@ function dragStart(e) {
         // e.target.classList.add('hide'); // Optionnel: on peut cacher l'élément temporairement si nécessaire
     }, 0);
 }
+
 
 
 
