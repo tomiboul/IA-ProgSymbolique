@@ -94,6 +94,7 @@ pontExistant(ListePont, Pont):-
 */
 deplacePont(((X1, Y1)-(X2,Y2)), ((NewX1, NewY1)-(NewX2,NewY2)), ListePont, NewListePont):- 
     %% a enleve car de souvenir on peut pas ajouter des ponts
+    
     number(X1),
     number(Y1),
     number(X2),
