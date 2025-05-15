@@ -101,20 +101,16 @@ const gameState = {
     },
     
     deleteBridge(bridgeCoords) {
-        if (Array.isArray(bridgeCoords)) {
-            const [[x1, y1], [x2, y2]] = bridgeCoords;
-            const key = this.bridgeKey(x1, y1, x2, y2);
-            this.bridges.delete(key);
-            return true;
-        }
+        // if (Array.isArray(bridgeCoords)) {
+        //     const [[x1, y1], [x2, y2]] = bridgeCoords;
+        //     const key = this.bridgeKey(x1, y1, x2, y2);
+        //     this.bridges.delete(key);
+        //     return true;
+        // }
 
-        else if (typeof(bridgeCoords)) {
-            this.bridges.delete(bridgeCoords);
-            return true;
-        }
-        
-        console.warn("Brdige (", key, ") deletion failed");
-        return false;
+        this.bridges.delete(bridgeCoords);
+        return true;
+
     },
 
     getBridgePossibleRotations(bridgeCoords) {
@@ -221,48 +217,276 @@ function waitForClickOnBridge(state) {
 }
 
 async function handlePlayingTurn(state) {
+    // Partie déplacement du lutin
     let moveCompleted = false;
-
-    // Elf part:
     do {
         const result = await waitForValidDragAndDrop(state);
         moveCompleted = result.moved;
     } while (!moveCompleted);
 
-    cells = document.querySelectorAll(".cell");
-    console.log("all cells:");
-    console.log(cells);
-    cells.forEach( cell => {cell.removeEventListener('dragenter', dragEnter),
-        cell.removeEventListener('dragover', dragOver),
-        cell.removeEventListener('dragleave', dragLeave),
-        cell.removeEventListener('drop', drop)});
+    // Désactiver les événements de drag pour les cellules
+    disableCellDragEvents();
 
-    // Bridge part:
-    let x1,y1;
-    let x2,y2;
+    // Partie gestion du pont
+    await handleBridgeAction(state);
+
+    // Réactiver les événements pour le prochain tour
+    enableCellDragEvents();
     
-    do {
-        const clickedBridge = await waitForClickOnBridge(state);
-        const id = clickedBridge.id;
-        const cellsCoords = id.split("-");
-        console.warn(cellsCoords);
-        let originCoords = cellsCoords[0];
-        let destinationCoords = cellsCoords[1];
-        originCoords = originCoords.split(",");
-        destinationCoords = destinationCoords.split(",");
-        console.warn(originCoords);
-        console.warn(destinationCoords);
-        [x1,y1] = [parseInt(originCoords[0],10),parseInt(originCoords[1],10)];
-        [x2,y2] = [parseInt(destinationCoords[0],10),parseInt(destinationCoords[1],10)];
-    } while (!gameState.doesBridgeExist(gameState.bridgeKey(x1,y1,x2,y2)));
+    return;
+}
 
-    do {
+function tryRotateBridge(coords, state) {
+    const [x1, y1, x2, y2] = coords;
 
+    // Déterminer l'orientation actuelle
+    const isHorizontal = y1 === y2;
+    const isVertical = x1 === x2;
+
+    if (!isHorizontal && !isVertical) return null;
+
+    // Calculer le centre du pont
+    const centerX = (x1 + x2) / 2;
+    const centerY = (y1 + y2) / 2;
+
+    // Calculer les nouvelles coordonnées après rotation de 90°
+    let newCoords;
+    if (isHorizontal) {
+        newCoords = [
+            centerX, centerY - 0.5,
+            centerX, centerY + 0.5
+        ];
+    } else {
+        newCoords = [
+            centerX - 0.5, centerY,
+            centerX + 0.5, centerY
+        ];
     }
 
-    while(true)
+    // Vérifier que c’est bien un pont valide (sur grille entière)
+    if (!Number.isInteger(newCoords[0]) || !Number.isInteger(newCoords[1]) ||
+        !Number.isInteger(newCoords[2]) || !Number.isInteger(newCoords[3])) {
+        return null;
+    }
 
-    return;
+    // Vérifier qu’il n’y a pas déjà un pont à cet emplacement
+    const key = state.bridgeKey(...newCoords);
+    if (state.bridges.has(key)) return null;
+
+    // Optionnel : vérifie que les cellules sont dans les limites
+    // (ajoute un check selon la taille du plateau si besoin)
+
+    return newCoords;
+}
+
+
+async function handleBridgeAction(state) {
+    // Attendre la sélection d’un pont et de l’action associée
+    const selectedBridge = await waitForBridgeSelection(state);
+
+
+    // Si l'utilisateur n'a rien sélectionné (timeout ou annulation)
+    if (selectedBridge.action === 'cancel' || !selectedBridge.coords) {
+        return;
+    }
+
+    // Appliquer l'action choisie
+    switch (selectedBridge.action) {
+        case 'destroy':
+            const ppp = [x1,y1,x2,y2] = [selectedBridge.coords[0],selectedBridge.coords[1],selectedBridge.coords[2],selectedBridge.coords[3]];
+            const bridgeKey = state.bridgeKey(x1,y1,x2,y2);
+
+            state.deleteBridge(bridgeKey);
+            // updateBridgeVisuals(state);
+            const bridge = document.getElementById(bridgeKey);
+            bridge.style.background = "none";
+            break;
+
+        case 'rotate':
+            const rotatedCoords = tryRotateBridge(selectedBridge.coords, state);
+            if (rotatedCoords) {
+                state.deleteBridge(selectedBridge.coords);
+                state.bridges.add(state.bridgeKey(...rotatedCoords));
+                updateBridgeVisuals(state);
+            } else {
+                alert("Impossible de tourner ce pont (collision ou hors limites).");
+            }
+            break;
+
+        default:
+            console.warn("Action inconnue :", selectedBridge.action);
+    }
+}
+
+function createDestroyBridgeButton() {
+    const btn = document.createElement('button');
+    btn.id = 'destroy-bridge-btn';
+    btn.textContent = 'Détruire le pont';
+    btn.style.position = 'absolute';
+    btn.style.top = '10px';
+    btn.style.right = '10px';
+    btn.style.zIndex = '1000';
+    return btn;
+}
+
+
+async function waitForBridgeSelection(state) {
+    return new Promise((resolve) => {
+        let selectedBridgeCoords = null;
+        let selectedBridgeElement = null;
+
+        const cleanup = () => {
+            document.querySelectorAll('.bridge').forEach(b => b.removeEventListener('click', bridgeHandler));
+            document.querySelectorAll('.bridge').forEach(b => b.classList.remove('selected-bridge'));
+            const menu = document.getElementById('bridge-action-menu');
+            if (menu) menu.remove();
+        };
+
+        const bridgeHandler = (e) => {
+            const clickedBridge = e.target.closest('.bridge');
+            if (!clickedBridge) return;
+
+            // Effacer les sélections précédentes
+            document.querySelectorAll('.bridge').forEach(b => b.classList.remove('selected-bridge'));
+            clickedBridge.classList.add('selected-bridge');
+            selectedBridgeElement = clickedBridge;
+            selectedBridgeCoords = parseBridgeId(clickedBridge.id);
+
+            // Afficher le menu d’action
+            if (!document.getElementById('bridge-action-menu')) {
+                const menu = document.createElement('div');
+                menu.id = 'bridge-action-menu';
+                menu.style.position = 'absolute';
+                menu.style.top = '10px';
+                menu.style.right = '10px';
+                menu.style.zIndex = '1000';
+                menu.style.background = 'white';
+                menu.style.border = '1px solid #ccc';
+                menu.style.padding = '10px';
+                menu.style.borderRadius = '6px';
+                menu.style.display = 'flex';
+                menu.style.flexDirection = 'column';
+                menu.style.gap = '5px';
+
+                const rotateBtn = document.createElement('button');
+                rotateBtn.textContent = '🔄 Tourner';
+                rotateBtn.addEventListener('click', () => {
+                    cleanup();
+                    resolve({ action: 'rotate', coords: selectedBridgeCoords });
+                });
+
+                const destroyBtn = document.createElement('button');
+                destroyBtn.textContent = '❌ Supprimer';
+                destroyBtn.addEventListener('click', () => {
+                    cleanup();
+                    resolve({ action: 'destroy', coords: selectedBridgeCoords });
+                });
+
+                menu.appendChild(rotateBtn);
+                menu.appendChild(destroyBtn);
+                document.getElementById("middle-container").appendChild(menu);
+            }
+        };
+
+        // Ajouter les listeners
+        document.querySelectorAll('.bridge').forEach(bridge => {
+            bridge.addEventListener('click', bridgeHandler);
+        });
+
+        // Timeout de sécurité (30s)
+        setTimeout(() => {
+            cleanup();
+            resolve({ action: 'cancel' });
+        }, 30000);
+    });
+}
+
+
+
+async function handleBridgeMove(state, originalBridgeCoords) {
+    // Supprimer temporairement le pont original
+    state.deleteBridge(originalBridgeCoords);
+    updateBridgeVisuals(state);
+
+    // Attendre la sélection du nouveau pont
+    let newBridgeCoords;
+    do {
+        const clickedBridge = await waitForClickOnBridge(state);
+        newBridgeCoords = parseBridgeId(clickedBridge.id);
+    } while (!isValidBridgeMove(originalBridgeCoords, newBridgeCoords, state));
+
+    // Ajouter le nouveau pont
+    state.bridges.add(state.bridgeKey(...newBridgeCoords));
+    updateBridgeVisuals(state);
+}
+
+function isValidBridgeMove(oldCoords, newCoords, state) {
+    // Implémentez la logique de validation pour le déplacement du pont
+    // Par exemple, vérifiez que le nouveau pont est une rotation valide de l'ancien
+    return true; // À adapter
+}
+
+function disableCellDragEvents() {
+    const cells = document.querySelectorAll('.cell');
+    cells.forEach(cell => {
+        cell.removeEventListener('dragenter', dragEnter);
+        cell.removeEventListener('dragover', dragOver);
+        cell.removeEventListener('dragleave', dragLeave);
+        cell.removeEventListener('drop', drop);
+    });
+}
+
+function enableCellDragEvents() {
+    const cells = document.querySelectorAll('.cell');
+    cells.forEach(cell => {
+        cell.addEventListener('dragenter', dragEnter);
+        cell.addEventListener('dragover', dragOver);
+        cell.addEventListener('dragleave', dragLeave);
+        cell.addEventListener('drop', drop);
+    });
+}
+
+function parseBridgeId(bridgeId) {
+    // Convertit l'ID d'un pont en coordonnées
+    const [part1, part2] = bridgeId.split('-');
+    const [x1, y1] = part1.split(',').map(Number);
+    const [x2, y2] = part2.split(',').map(Number);
+    return [x1, y1, x2, y2];
+}
+
+function updateBridgeVisuals(state) {
+    // Supprimer tous les ponts visuels
+    document.querySelectorAll('.bridge').forEach(el => el.remove());
+    
+    // Recréer les ponts selon l'état actuel
+    state.bridges.forEach(bridgeKey => {
+        const [x1, y1, x2, y2] = bridgeKey.split('-').flatMap(coord => 
+            coord.split(',').map(Number)
+        );
+        createBridgeElement(x1, y1, x2, y2);
+    });
+}
+
+function createBridgeElement(x1, y1, x2, y2) {
+    const bridge = document.createElement('div');
+    bridge.className = 'bridge';
+    bridge.id = `${x1},${y1}-${x2},${y2}`;
+    
+    // Positionnement et style du pont
+    if (x1 === x2) { // Pont vertical
+        bridge.classList.add('v-bridge');
+        bridge.style.left = `${x1 * 50 - 5}px`;
+        bridge.style.top = `${Math.min(y1, y2) * 50}px`;
+        bridge.style.height = '50px';
+    } else { // Pont horizontal
+        bridge.classList.add('h-bridge');
+        bridge.style.left = `${Math.min(x1, x2) * 50}px`;
+        bridge.style.top = `${y1 * 50 - 5}px`;
+        bridge.style.width = '50px';
+    }
+    
+    document.getElementById('board').appendChild(bridge);
+    return bridge;
 }
 
 async function playTurn(state) {

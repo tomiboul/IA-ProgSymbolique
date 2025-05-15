@@ -49,6 +49,39 @@ for (let row = 0; row < totalSize; row++) {
     }
 }
 
+// Filter and display only the bridges that exist in the gameState
+function displayBridges(state) {
+    const board = document.getElementById("board");
+
+    // Clear existing bridge elements
+    const bridgeElements = board.querySelectorAll(".h-bridge-container, .v-bridge-container");
+    bridgeElements.forEach(bridge => bridge.remove());
+
+    // Iterate through the bridges in the state
+    state.bridges.forEach(bridge => {
+        const [start, end] = bridge.split("-");
+        const [x1, y1] = start.split(",").map(Number);
+        const [x2, y2] = end.split(",").map(Number);
+
+        // Determine if the bridge is horizontal or vertical
+        if (x1 === x2) {
+            // Vertical bridge
+            const bridgeDiv = document.createElement("div");
+            bridgeDiv.className = "v-bridge-container";
+            bridgeDiv.style.gridColumn = `${x1}`;
+            bridgeDiv.style.gridRow = `${Math.min(y1, y2) + 1}`;
+            board.appendChild(bridgeDiv);
+        } else if (y1 === y2) {
+            // Horizontal bridge
+            const bridgeDiv = document.createElement("div");
+            bridgeDiv.className = "h-bridge-container";
+            bridgeDiv.style.gridColumn = `${Math.min(x1, x2) + 1}`;
+            bridgeDiv.style.gridRow = `${y1}`;
+            board.appendChild(bridgeDiv);
+        }
+    });
+}
+
 // Drag and drop 
 
 /* draggable element from https://www.javascripttutorial.net/web-apis/javascript-drag-and-drop/*/
@@ -123,6 +156,7 @@ function drop(e) {
     const dropTarget = e.target.closest('.cell');
 
     if (!dropTarget) return;
+    console.warn(originCell);
 
     const [oldX, oldY] = originCell.id.split('-').map(Number);
     const [newX, newY] = dropTarget.id.split('-').map(Number);
@@ -146,14 +180,18 @@ function drop(e) {
             onDropCallback = null;
         }
 
-        draggable.removeEventListener('dragstart', dragStart);
     } else {
-        originCell.appendChild(draggable);
+        if(originCell && draggable) originCell.appendChild(draggable);
         if (onDropCallback) {
             onDropCallback({ moved: false });
             onDropCallback = null;
         }
     }
+
+    cells = document.querySelectorAll('.cell');
+    cells.forEach(cell => {
+        cell.classList.remove("drag-over");
+    })
 }
 
 

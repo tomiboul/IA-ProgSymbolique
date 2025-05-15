@@ -209,3 +209,33 @@ border: 2px solid green;
 .dragover {
 background-color: lightgreen;
 }
+
+
+
+.bridge:hover {
+    background-color: #A0522D; /* Couleur plus claire au survol */
+    transform: scale(1.1);
+}
+
+
+
+#destroy-bridge-btn {
+    padding: 10px 20px;
+    background-color: #fff;
+
+    border: dashed 1px #ff4444;
+    color: black;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#destroy-bridge-btn:hover {
+    background-color: #cc0000;
+}
+
+.selected-bridge {
+    outline: 3px solid red;
+    border-radius: 4px;
+}
