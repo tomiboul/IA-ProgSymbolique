@@ -1,48 +1,3 @@
-const gameStateOld = {
-    elves: {
-        // each elf is represented by its coord (x,y,stuck(bool))
-        green: [],
-        blue: [],
-        yellow: [],
-        red: []
-    },
-
-    bridges: [], //[ ((x1,y1),(x2,y2))]
-    currentPlayerIndex: 0,
-    playerOrder: ['green', 'blue', 'yellow', 'red'],
-
-    get currentPlayer() {
-        return this.playerOrder[this.currentPlayerIndex];
-    },
-
-    get currentPlayerElves() {
-        return this.elves[this.currentPlayer];
-    },
-
-    currentPhase: 'starting',
-    deadPlayersIndex: [],
-
-    generateAllBridges(gridSize) {
-        const bridges = [];
-        
-        // Ponts horizontaux, seul x varie
-        for (let y = 0; y < gridSize; y++) {
-            for (let x = 0; x < gridSize - 1; x++) {
-                bridges.push([ x, y , x + 1, y ]); // (x,y) < (x+1,y)
-            }
-        }
-        
-        // Ponts verticaux seul y varie
-        for (let x = 0; x < gridSize; x++) {
-            for (let y = 0; y < gridSize - 1; y++) {
-                bridges.push([ x, y, x, y + 1 ]); // (x,y) < (x,y+1)
-            }
-        }
-        return bridges;
-    }
-}
-
-// NEW GaemeState
 const gameState = {
     boardSize: 6,
     players: [
@@ -150,6 +105,8 @@ const gameState = {
     }
 }
   
+const horizontalBridgeSource = 'images/horizontal_bridge.png';
+const verticalBridgeSource   = 'images/vertical_bridge.png'
 
 board = document.getElementById("board");
 
@@ -279,6 +236,89 @@ function tryRotateBridge(coords, state) {
     return newCoords;
 }
 
+async function handleBridgeRotation(state, originalCoords) {
+    // Supprimer temporairement le pont original (visuellement et dans le state)
+    state.deleteBridge(originalCoords);
+    // updateBridgeVisuals(state);
+
+    // Calculer centre actuel du pont
+    const [x1, y1, x2, y2] = originalCoords;
+    const centerX = (x1 + x2) / 2;
+    const centerY = (y1 + y2) / 2;
+
+    const originX = x1;
+    const originY = y1;
+
+    // Attendre un clic sur une cellule
+    let rotatedCoords = null;
+
+    while (!rotatedCoords) {
+        const cell = await waitForClickOnCell();
+        const id = cell.id;
+        const parts = id.split("-");
+        destX = parseInt(parts[0], 10);
+        destY = parseInt(parts[1], 10);
+
+        // Tente une rotation en ce point
+        rotatedCoords = tryRotateBridgeAt(originX, originY, destX, destY, originalCoords,state);
+
+        if (!rotatedCoords) {
+            alert("Rotation impossible à cet emplacement. Choisissez une autre cellule.");
+        }
+    }
+
+    // Ajoute le pont tourné
+    state.bridges.add(state.bridgeKey(...rotatedCoords));
+    updateBridgeVisuals(state);
+}
+
+function tryRotateBridgeAt(x1, y1, x2, y2, originalCoords, state) {
+    const [oldx1, oldy1, oldx2, oldy2] = originalCoords;
+    const oldBridgeKey = state.bridgeKey(oldx1,oldy1,oldx2,oldy2);
+    const newBridgeKey = state.bridgeKey(x1, y1, x2, y2);
+
+    const isHorizontal = y1 === y2;
+    const isVertical = x1 === x2;
+
+    if (!isHorizontal && !isVertical) return null;
+
+    // Check if rotation is not out of bounds (impossible)
+
+    let newCoords;
+
+    // Check if a the position x1,y1->x2,y2 is free or taken by an existing bridge
+    if (state.doesBridgeExist(state.bridgeKey(x1,y1,x2,y2))) {
+        // This spot is not free
+        return null;
+    }
+
+    // delete bridge on old spot
+    state.bridges.delete(oldBridgeKey);
+    alert(oldBridgeKey)
+
+    // add bridge on the new spot
+    if (state.bridges.has(newBridgeKey)) return null;
+
+    state.bridges.add(newBridgeKey);
+    console.warn(newBridgeKey);    
+
+    const oldBridgeElement = document.getElementById(oldBridgeKey);
+    const newBrdigeElement = document.getElementById(newBridgeKey);
+
+    // remove background from old bridge
+    oldBridgeElement.style.background = "none";
+
+    // add background to new bridge
+    if (isHorizontal) newBrdigeElement.style.backgroundImage=     "url(" + horizontalBridgeSource +")";
+    else if (isVertical) {
+        newBrdigeElement.style.backgroundImage = "url(" + verticalBridgeSource +")"
+        newBrdigeElement.style.backgroundPosition = "center";
+        newBrdigeElement.style.backgroundSize     = "cover";
+    };
+
+    return newCoords;
+}
+
 
 async function handleBridgeAction(state) {
     // Attendre la sélection d’un pont et de l’action associée
@@ -293,7 +333,7 @@ async function handleBridgeAction(state) {
     // Appliquer l'action choisie
     switch (selectedBridge.action) {
         case 'destroy':
-            const ppp = [x1,y1,x2,y2] = [selectedBridge.coords[0],selectedBridge.coords[1],selectedBridge.coords[2],selectedBridge.coords[3]];
+            const [x1,y1,x2,y2] = [selectedBridge.coords[0],selectedBridge.coords[1],selectedBridge.coords[2],selectedBridge.coords[3]];
             const bridgeKey = state.bridgeKey(x1,y1,x2,y2);
 
             state.deleteBridge(bridgeKey);
@@ -303,14 +343,10 @@ async function handleBridgeAction(state) {
             break;
 
         case 'rotate':
-            const rotatedCoords = tryRotateBridge(selectedBridge.coords, state);
-            if (rotatedCoords) {
-                state.deleteBridge(selectedBridge.coords);
-                state.bridges.add(state.bridgeKey(...rotatedCoords));
-                updateBridgeVisuals(state);
-            } else {
-                alert("Impossible de tourner ce pont (collision ou hors limites).");
-            }
+            case 'rotate':
+        await handleBridgeRotation(state, selectedBridge.coords);
+        break;
+
             break;
 
         default:
@@ -355,18 +391,9 @@ async function waitForBridgeSelection(state) {
             // Afficher le menu d’action
             if (!document.getElementById('bridge-action-menu')) {
                 const menu = document.createElement('div');
+                const rightContainer = document.getElementById("right-container");
+
                 menu.id = 'bridge-action-menu';
-                menu.style.position = 'absolute';
-                menu.style.top = '10px';
-                menu.style.right = '10px';
-                menu.style.zIndex = '1000';
-                menu.style.background = 'white';
-                menu.style.border = '1px solid #ccc';
-                menu.style.padding = '10px';
-                menu.style.borderRadius = '6px';
-                menu.style.display = 'flex';
-                menu.style.flexDirection = 'column';
-                menu.style.gap = '5px';
 
                 const rotateBtn = document.createElement('button');
                 rotateBtn.textContent = '🔄 Tourner';
@@ -384,7 +411,7 @@ async function waitForBridgeSelection(state) {
 
                 menu.appendChild(rotateBtn);
                 menu.appendChild(destroyBtn);
-                document.getElementById("middle-container").appendChild(menu);
+                rightContainer.appendChild(menu);
             }
         };
 
@@ -394,10 +421,10 @@ async function waitForBridgeSelection(state) {
         });
 
         // Timeout de sécurité (30s)
-        setTimeout(() => {
-            cleanup();
-            resolve({ action: 'cancel' });
-        }, 30000);
+        // setTimeout(() => {
+        //     cleanup();
+        //     resolve({ action: 'cancel' });
+        // }, 30000);
     });
 }
 
@@ -552,12 +579,12 @@ async function waitForValidDragAndDrop(state) {
         };
 
         // Timeout de sécurité
-        setTimeout(() => {
-            if (onDropCallback === onValidDrop) {
-                cleanup();
-                resolve({ moved: false });
-            }
-        }, 120000);
+        // setTimeout(() => {
+        //     if (onDropCallback === onValidDrop) {
+        //         cleanup();
+        //         resolve({ moved: false });
+        //     }
+        // }, 120000);
     });
 }
 

@@ -117,21 +117,18 @@ function dragStart(e) {
     const id = e.target.id;
     const parentId = e.target.parentElement.id;
 
-    console.log(id);
-    console.log(parentId);
-    console.log("THIS IS THE ID OF THE DRAGGED ELEMENT: " + id);
     const [x, y] = parentId.split('-').map(Number);
-    console.log("dragStart(): x=" + x + " and y=" + y);
+    // console.log("dragStart(): x=" + x + " and y=" + y);
     
     const playerIndex = gameState.currentPlayerIndex;
-    console.log("dragStart(): current player index = " + playerIndex);
-    console.log("dragStart(): current player elves: ");
-    console.log(gameState.players[playerIndex].elves);
+    // console.log("dragStart(): current player index = " + playerIndex);
+    // console.log("dragStart(): current player elves: ");
+    // console.log(gameState.players[playerIndex].elves);
 
     const playerElf = gameState.players[playerIndex].elves.find(([elfX,elfY]) => elfX === x && elfY === y);
-    console.log("dragStart(): player elf = "+ playerElf);
-    console.log("           State: ");
-    console.log(gameState)
+    // console.log("dragStart(): player elf = "+ playerElf);
+    // console.log("           State: ");
+    // console.log(gameState)
 
     if (!playerElf) {
         console.warn("This is not your elf!");

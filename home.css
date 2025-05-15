@@ -166,12 +166,15 @@ body {
 #right-container {
     display: flex;
     justify-content: center;
-    align-items: end;
+    /* align-items: end; */
 }
 
-#confirm-button {
-    height: 50px;
-    width: 150px;
+#game-info {
+    height: 30%;
+    width: 80%;
+
+    display: grid;
+    grid-template-rows: 1fr 1fr;
 
     background-color: #A9CB7B;
 
@@ -184,6 +187,25 @@ body {
 
     transition: .2s ease;
 } 
+
+#game-info * {
+    color: white;
+}
+
+#turn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border-bottom: solid 2px #8EC346;
+    
+}
+
+#phase {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
 #confirm-button:hover {
     background-color: rgba(142, 195, 70, .8);
@@ -238,4 +260,20 @@ background-color: lightgreen;
 .selected-bridge {
     outline: 3px solid red;
     border-radius: 4px;
+}
+
+
+#bridge-action-menu {
+    position: relative;
+
+    bottom: 0;
+
+    z-index: 1000;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }

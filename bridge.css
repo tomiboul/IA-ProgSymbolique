@@ -35,6 +35,11 @@ body {
     width: 100%;
   }
 
+.bridge {
+  background-position: center;
+  background-size: cover;
+}
+
 .h-bridge-container {
     /* background-color: lightblue; */
     margin: auto;
