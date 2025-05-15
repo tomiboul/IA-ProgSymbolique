@@ -19,7 +19,7 @@ const gameState = {
         return this.elves[this.currentPlayer];
     },
 
-    currentPhase: 'placementPhase',
+    currentPhase: 'starting',
     deadPlayersIndex: [],
 
     generateAllBridges(gridSize) {
@@ -28,14 +28,14 @@ const gameState = {
         // Ponts horizontaux, seul x varie
         for (let y = 0; y < gridSize; y++) {
             for (let x = 0; x < gridSize - 1; x++) {
-                bridges.push([ [x, y , x + 1, y] ]); // (x,y) < (x+1,y)
+                bridges.push([ x, y , x + 1, y ]); // (x,y) < (x+1,y)
             }
         }
         
         // Ponts verticaux seul y varie
         for (let x = 0; x < gridSize; x++) {
             for (let y = 0; y < gridSize - 1; y++) {
-                bridges.push([ [x, y, x, y + 1] ]); // (x,y) < (x,y+1)
+                bridges.push([ x, y, x, y + 1 ]); // (x,y) < (x,y+1)
             }
         }
         return bridges;
@@ -58,7 +58,7 @@ function newGameInit(state) {
     state.currentPlayerIndex = 0;
 
     // Init game phase 
-    state.currentPhase = 'placementPhase';
+    state.currentPhase = 'starting';
             
     // Init bridges 
     state.bridges = state.generateAllBridges();
@@ -108,30 +108,102 @@ async function handlePlacementTurn(state) {
 }
 
 
-async function handlePlayingTurn(state) {
-    // while(false){
-    // const clickedCell = await waitForClickOnCell(gameState);
+// async function handlePlayingTurn(state) {
+//     // while(false){
+//     // const clickedCell = await waitForClickOnCell(gameState);
 
-    //         const id = clickedCell.id; 
-    //         const parts = id.split("-"); 
-    //         const x = parseInt(parts[0], 10);
-    //         const y = parseInt(parts[1], 10);
-    //         console.log('Coordonnées : x = ${x}, y = ${y}');
-    // }
+//     //         const id = clickedCell.id; 
+//     //         const parts = id.split("-"); 
+//     //         const x = parseInt(parts[0], 10);
+//     //         const y = parseInt(parts[1], 10);
+//     //         console.log('Coordonnées : x = ${x}, y = ${y}');
+//     // }
 
-    let x = 9999999;
-    let y = 9999999;
-    while(!checkElfOnCell(x, y, state) ) {
-    const clickedCell = await waitForClickOnCell();
+//     let x = 9999999;
+//     let y = 9999999;
+//     while(!checkElfOnCell(x, y, state) ) {
+//     const clickedCell = await waitForClickOnCell();
 
-            const id = clickedCell.id; 
-            const parts = id.split("-"); 
-            x = parseInt(parts[0], 10);
-            y = parseInt(parts[1], 10);
-    }
+//             const id = clickedCell.id; 
+//             const parts = id.split("-"); 
+//             x = parseInt(parts[0], 10);
+//             y = parseInt(parts[1], 10);
+//     }
 
 
+// }
+
+// ChatGPT
+async function waitForValidDragAndDrop(state) {
+    return new Promise((resolve) => {
+        let moveCompleted = false;
+
+        const onValidDrop = (e) => {
+            if (drop(e)) {
+                cleanup();
+                if(!moveCompleted) {
+                    moveCompleted = true;
+                    resolve({ moved: true });
+                }
+            }
+        };
+
+        const cleanup = () => {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(c => c.removeEventListener('drop', onValidDrop));
+        };
+
+        const cells = document.querySelectorAll('.cell');
+        cells.forEach(cell => {
+            cell.addEventListener('drop', onValidDrop);
+        });
+
+        // Timeout de sécurité
+        setTimeout(() => {
+            if (!moveCompleted) {
+                cleanup();
+                resolve({ moved: false });
+            }
+        }, 120000);
+    });
 }
+
+async function handlePlayingTurn(state) {
+    console.log("En attente d'un drag and drop valide...");
+    try {
+        const result = await waitForValidDragAndDrop(state);
+        return result.moved; // Retourne explicitement
+    } catch (e) {
+        console.error("Erreur dans handlePlayingTurn:", e);
+        return false;
+    }
+}
+
+// async function handlePlayingTurn(state) {
+//     console.log("Dans handlePlayingTurn()");
+//     return new Promise((resolve) => {
+//         // On attend que le joueur déplace un lutin via le drag and drop
+//         // La résolution se fait dans la fonction drop()
+//         const cells = document.querySelectorAll('.cell');
+
+//         cells.forEach(cell => {
+//             cell.addEventListener('dragenter', dragEnter);
+//             cell.addEventListener('dragover', dragOver);
+//             cell.addEventListener('dragleave', dragLeave);
+//             cell.addEventListener('drop', drop);
+//         });
+        
+//         const checkMove = () => {
+//             cells.forEach(cell => {
+//                 cell.addEventListener('drop', function onDrop(e) {
+//                     // Une fois qu'un lutin est déposé, on résout la promesse
+//                     cells.forEach(c => c.removeEventListener('drop', onDrop));
+//                 });
+//             });
+//         };
+//         resolve(checkMove());
+//     });
+// }
 
 function checkIfCellIsFree(x, y, state) {
     if(x < 0 || x > 6 || y < 0 || y > 6) {
@@ -167,7 +239,8 @@ function checkElfOnCell(x, y, state) {
     for (const playerColour of Object.keys(state.elves)) {
         for (const elf of state.elves[playerColour]) {
             // console.log("playerColour : ", playerColour); 
-            const [thisElfX, thisElfY] = elf;
+            const thisElfX = elf[0];
+            const thisElfY = elf[1];
             if(thisElfX === x && thisElfY === y) {
                 return playerColour === state.currentPlayer; // true if elf belongs to currentPlayer
             }
@@ -259,8 +332,8 @@ async function playTurn(state){
         // if no elf on that cell -> display some positive feeback (green border/...)
     }
 
-    else if(state.currentPhase === 'playingPhase') {
-        
+    else if(state.currentPhase === 'playing') {
+        await handlePlayingTurn();
     }
 }
 
@@ -385,15 +458,18 @@ function setNextTurn(state) {
 }
 
 function checkPhase(state) {
+    console.log("************Dans checkPhase");
+    console.log("initial phase: ", gameState.currentPhase);
     let number_of_elves = {};
     
     for (const playerColour of Object.keys(gameState.elves)) {
         number_of_elves[playerColour] = state.elves[playerColour].length;
     }
-    if(number_of_elves['green'] == 4 && number_of_elves['blue'] == 4 && number_of_elves['yellow'] == 4 && number_of_elves['red'] == 4){
-        gameState.currentPhase = 'playingPhase';
-        return true
+    if(number_of_elves['green'] == 1 && number_of_elves['blue'] == 1 && number_of_elves['yellow'] == 1 && number_of_elves['red'] == 1){
+        gameState.currentPhase = 'playing';
+        console.log("************-_- phase : ", gameState.currentPhase);
     }   
+    console.log("************^^ Final phase : ", gameState.currentPhase);
 }
 
 async function pontuXL(state, playersOrder) {
@@ -404,12 +480,12 @@ async function pontuXL(state, playersOrder) {
 
     // Main loop
     while(state.currentPhase !== 'finished') {
-        console.log("Turn n°", i);
+        console.log(`Tour n°${i} - Joueur ${state.currentPlayer}`);
         await playTurn(state);
         i++
-        if(checkPhase(state)) break;
+        checkPhase(state);
         checkForLoser(state);
-        //checkIfGameFinished(state);
+        // if (checkIfGameFinished(state)) break;
         setNextTurn(state);
         // updateBoardDisplay(state);
     }
@@ -439,6 +515,7 @@ document.getElementById("startgame").addEventListener("click", function() {
     // Launch a new game
     deleteElvesFromDOM();
     newGameInit(gameState);
+    gameState.currentPhase = 'placementPhase';
     pontuXL(gameState);
 });
 

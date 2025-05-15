@@ -63,6 +63,7 @@ let originCell = null;
 
 
 function dragStart(e) {
+    console.log("START EST APPELE");
     const id = e.target.id;
 
     // Récupérer les coordonnées de lutin à partir de l'ID
@@ -112,14 +113,14 @@ function dragStart(e) {
 
 
 // Drop targets (cells)
-const cells = document.querySelectorAll('.cell');
+// const cells = document.querySelectorAll('.cell');
 
-cells.forEach(cell => {
-    cell.addEventListener('dragenter', dragEnter);
-    cell.addEventListener('dragover', dragOver);
-    cell.addEventListener('dragleave', dragLeave);
-    cell.addEventListener('drop', drop);
-});
+// cells.forEach(cell => {
+//     cell.addEventListener('dragenter', dragEnter);
+//     cell.addEventListener('dragover', dragOver);
+//     cell.addEventListener('dragleave', dragLeave);
+//     cell.addEventListener('drop', drop);
+// });
 
 
 function dragEnter(e) {
@@ -156,43 +157,103 @@ function drop(e) {
 
     const id = e.dataTransfer.getData('text/plain');
     const draggable = document.getElementById(id);
-
     const dropTarget = e.target.closest('.cell');
 
-        if (dropTarget.children.length === 0 || !dropTarget) { //si y'a pas de lutin sur la case
-            dropTarget.appendChild(draggable); //on drop le lutin
-        } else {
-            originCell.appendChild(draggable); //sinon il retourne a la case d'origine
-        }
-
- 
-    // Ajoute le lutin dans la cellule cible
-    e.target.appendChild(draggable);
-    draggable.classList.remove('hide');
-
-    // Récupère les coordonnées de la cellule cible
-    const targetId = e.target.id; // ex: "3-2"
-    const [xStr, yStr] = targetId.split("-");
-    const x = parseInt(xStr) - 1;
-    const y = parseInt(yStr) - 1;
-
-    // Utilise le joueur courant comme couleur
-    const color = gameState.currentPlayer;
-    const elfList = gameState.elves[color];
-
-    // Met à jour ou ajoute l'elf
-    console.log("iddddd",id);
-    const existingIndex = elfList.findIndex(elf => elf.id === id);
-
-    const newElf = { id, x, y, stuck: false };
-
-    if (existingIndex !== -1) {
-        elfList[existingIndex] = newElf;
-    } else {
-        elfList.push(newElf);
+    // If no cell found -> cancel and put elf back on origin cell
+    if (!dropTarget) {
+        originCell.appendChild(draggable);
+        return false;
     }
 
-    console.log(`Nouvelle position pour ${color} :`, elfList);
-    console.log("elf =", 
-    );
+    // Get cells coords
+    const [oldX, oldY] = originCell.id.split("-").map(Number);
+    const [newX, newY] = dropTarget.id.split("-").map(Number);
+
+    // Check if valid move
+    if (isValidMove(oldX, oldY, newX, newY, gameState)) {
+        // DOM update
+        draggable.id = `lutin-${newX}-${newY}`;
+        dropTarget.appendChild(draggable);
+
+        // State update
+        const color = gameState.currentPlayer;
+        const elfIndex = gameState.elves[color].findIndex(elf => 
+            elf[0] === oldX && elf[1] === oldY
+        );
+        
+        if (elfIndex !== -1) {
+            const wasStuck = gameState.elves[color][elfIndex][2];
+            gameState.elves[color][elfIndex] = [newX, newY, wasStuck];
+            return true;
+        }
+    }
+
+    // Invalid move -> back to origin
+    originCell?.appendChild(draggable);
+    return false;
+}
+
+// function drop(e) {
+//     e.preventDefault();
+//     e.target.classList.remove('drag-over');
+
+//     const id = e.dataTransfer.getData('text/plain');
+//     const draggable = document.getElementById(id);
+//     const dropTarget = e.target.closest('.cell');
+
+//     if (!dropTarget) {
+//         originCell.appendChild(draggable);
+//         return;
+//     }
+
+//     // Récupérer les anciennes coordonnées
+//     const [_, oldX, oldY] = id.split("-");
+    
+//     // Récupérer les nouvelles coordonnées
+//     const [newX, newY] = dropTarget.id.split("-");
+    
+//     const color = gameState.currentPlayer;
+//     const elfList = gameState.elves[color];
+
+//     // Vérifier si le déplacement est valide
+//     if (isValidMove(parseInt(oldX), parseInt(oldY), parseInt(newX), parseInt(newY), gameState)) {
+//         // Mettre à jour la position dans le gameState
+//         const elfIndex = elfList.findIndex(elf => elf[0] == oldX && elf[1] == oldY);
+//         if (elfIndex !== -1) {
+//             elfList[elfIndex] = [parseInt(newX), parseInt(newY), false];
+            
+//             // Mettre à jour l'ID et la position du lutin
+//             draggable.id = `lutin-${newX}-${newY}`;
+//             dropTarget.appendChild(draggable);
+            
+//             // Vérifier si le joueur est bloqué après ce mouvement
+//             checkForLoser(gameState);
+//         }
+//     } else {
+//         // Mouvement invalide, remettre le lutin à sa place
+//         originCell.appendChild(draggable);
+//     }
+// }
+
+function isValidMove(oldX, oldY, newX, newY, state) {
+    // Vérifie si le déplacement est adjacent
+    const dx = Math.abs(newX - oldX);
+    const dy = Math.abs(newY - oldY);
+    
+    if ((dx === 1 && dy === 0) || (dx === 0 && dy === 1)) {
+        // Vérifie s'il y a un pont entre les deux cases
+        const bridgeExists = state.bridges.some(bridge => {
+            const [x1, y1, x2, y2] = bridge[0];
+            return (
+                (x1 === oldX && y1 === oldY && x2 === newX && y2 === newY) ||
+                (x1 === newX && y1 === newY && x2 === oldX && y2 === oldY)
+            );
+        });
+        
+        // Vérifie si la case de destination est libre
+        const cellIsFree = checkIfCellIsFree(newX, newY, state);
+        
+        return bridgeExists && cellIsFree;
+    }
+    return false;
 }

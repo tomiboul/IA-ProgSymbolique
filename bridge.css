@@ -25,7 +25,11 @@ body {
 
   .cell {
     background-color: #ececec;
-    border: 2px solid #333;
+    background-image: url("images/grass.avif");
+    background-position: center;
+    background-size: cover;
+
+    border: ridge 2px #96DB37;
 
     height: 100%;
     width: 100%;
