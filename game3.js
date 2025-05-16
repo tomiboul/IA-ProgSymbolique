@@ -243,8 +243,6 @@ async function handleBridgeRotation(state, originalCoords) {
 
     // Calculer centre actuel du pont
     const [x1, y1, x2, y2] = originalCoords;
-    const centerX = (x1 + x2) / 2;
-    const centerY = (y1 + y2) / 2;
 
     const originX = x1;
     const originY = y1;
@@ -773,7 +771,7 @@ function setNextTurn(state) {
 function checkPhase(state) {
     if (state.phase === "placement") {
         for (const player of state.players) {
-            if (player.elves.length < 1) return;
+            if (player.elves.length < 4) return;
         }
 
         state.phase = "playing";

@@ -1,5 +1,5 @@
 % INSTRUCTIONS
-% =swipl echo-server.pl=
+% =swipl echo-ws-server.pl=
 % =:- start_server.=
 %
 % Then navigate to http://localhost:3000 in your browser
