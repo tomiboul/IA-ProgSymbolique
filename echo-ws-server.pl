@@ -16,7 +16,9 @@
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_files)).
 :- use_module(library(http/websocket)).
-:- use_module('../chat', [reponse/2]).
+%:- use_module('../chat', [reponse/2]).
+:- use_module('ChatBot/chat', [reponse/2]).
+
 
 %reponse(Query, 'reponse'). %code test pour envoyer au serveur la reponse
 
