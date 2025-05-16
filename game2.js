@@ -62,6 +62,7 @@ function newGameInit(state) {
             
     // Init bridges 
     state.bridges = state.generateAllBridges();
+    //ajouter dead player
 }
 
 async function handlePlacementTurn(state) {
