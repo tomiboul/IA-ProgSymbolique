@@ -4,6 +4,8 @@
 %
 % Then navigate to http://localhost:3000 in your browser
 
+:- set_prolog_flag(encoding, utf8).
+
 
 :- module(echo_server,
   [ start_server/0,
@@ -59,13 +61,6 @@ stop_server(Port) :-
 
 default_port(3000).
 
-%gpt 
-query_prolog(QueryString, Response) :-
-    term_to_atom(Term, QueryString), % On convertit la requête en terme Prolog
-    (   call(Term)   % On exécute la requête Prolog
-    ->  Response = "Requête réussie"
-    ;   Response = "Requête échouée"
-    ).
 
 %! echo(+WebSocket) is nondet.
 % This predicate is used to read in a message via websockets and echo it

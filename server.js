@@ -26,6 +26,7 @@
      console.log("Réponse du serveur chatbot : ", event.data);
 
      const response = JSON.parse(event.data);
+     
      console.log('reponse : ', response.message);
 
      const botBubble = document.createElement("div");
