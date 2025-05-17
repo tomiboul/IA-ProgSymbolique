@@ -20,6 +20,7 @@
 :- use_module(library(http/websocket)).
 %:- use_module('../chat', [reponse/2]).
 :- use_module('ChatBot/chat', [reponse/2]).
+:- use_module('./situation', [ia/2]).
 
 
 %reponse(Query, 'reponse'). %code test pour envoyer au serveur la reponse
@@ -62,6 +63,14 @@ stop_server(Port) :-
 default_port(3000).
 
 
+convert_elf([Color,X,Y], (Color,X,Y)).
+
+convert_all_elves([], []).
+convert_all_elves([H|T], [(C,X,Y)|Rest]) :-
+    convert_elf(H, (C,X,Y)),
+    convert_all_elves(T, Rest).
+
+
 %! echo(+WebSocket) is nondet.
 % This predicate is used to read in a message via websockets and echo it
 % back to the client
@@ -71,10 +80,33 @@ echo(WebSocket) :-
     ( Message.opcode == close
     -> true
     ; Message.data = Dict,
-      Dict.get(message) = UserMessage,
-      reponse(UserMessage, Response),
-      write("Response: "), writeln(Response),
-      ws_send(WebSocket, json(Response)),
+      ( _{message: MsgData} :< Dict
+      -> (
+
+            ( string(MsgData)
+            -> 
+               reponse(MsgData, Response),
+               write("Response: "), writeln(Response),
+               ws_send(WebSocket, json(Response))
+            ; 
+              MsgData = _{elves: ElvesJson, bridges: Bridges, turnorder: TurnOrder},
+              convert_all_elves(ElvesJson, Elves),
+              write("Received state update:"), nl,
+              write("Elves: "), writeln(Elves),
+              write("Bridges: "), writeln(Bridges),
+              write("Turn Order: "), writeln(TurnOrder),
+              read_term_from_atom(TurnOrder, TurnOrderList, []),
+
+              writeln('Appel ia/2...'),
+              ia((Elves, Bridges, TurnOrderList), Result),
+              writeln('Après ia/2'),
+              writeln(Result)
+
+              
+            )
+         )
+      ; writeln("Malformed message received.")
+      ),
       echo(WebSocket)
     ).
 

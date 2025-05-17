@@ -25,9 +25,9 @@
    socket.onmessage = function (event) {
      console.log("Réponse du serveur chatbot : ", event.data);
 
-     const response = JSON.parse(event.data);
+     //const response = JSON.parse(event.data);
      
-     console.log('reponse : ', response.message);
+     //console.log('reponse : ', response.message);
 
      const botBubble = document.createElement("div");
     botBubble.classList.add("chat-response");
@@ -51,10 +51,10 @@
         userBubble.textContent = usermessage;
         chatContainer.appendChild(userBubble);
 
-        // Envoie au serveur
+      
         sendMessage(usermessage);
 
-        // Vide le champ
+      
         userInput.value = "";
       
        e.target.chatbot.value = "";
