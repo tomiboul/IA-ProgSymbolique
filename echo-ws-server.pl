@@ -69,6 +69,13 @@ convert_all_elves([], []).
 convert_all_elves([H|T], [(C,X,Y)|Rest]) :-
     convert_elf(H, (C,X,Y)),
     convert_all_elves(T, Rest).
+  
+
+convert_elves([], []).
+convert_elves([(ColorStr, X, Y) | T], [(ColorAtom, X, Y) | T2]) :-
+    atom_string(ColorAtom, ColorStr),
+    convert_elves(T, T2).
+
 
 
 %! echo(+WebSocket) is nondet.
@@ -95,12 +102,19 @@ echo(WebSocket) :-
               write("Elves: "), writeln(Elves),
               write("Bridges: "), writeln(Bridges),
               write("Turn Order: "), writeln(TurnOrder),
+              write('TYPE BRIDGES: '), write_term(Bridges, [quoted(true), portray(true)]), nl,
+              string_to_atom(Bridges, BridgesAtom),
+              read_term_from_atom(BridgesAtom, BridgesList, []), 
               read_term_from_atom(TurnOrder, TurnOrderList, []),
+              convert_elves(Elves, ElvesList),
+              writeln(TurnOrderList),
+              
 
               writeln('Appel ia/2...'),
-              ia((Elves, Bridges, TurnOrderList), Result),
+              ia((ElvesList, BridgesList, TurnOrderList), Result),
               writeln('Après ia/2'),
-              writeln(Result)
+              writeln(Result),
+              ws_send(WebSocket, json(Result))
 
               
             )
