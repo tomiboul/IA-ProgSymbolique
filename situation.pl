@@ -1,10 +1,11 @@
-:- module(situation, [ajoutLutin/3, getScore/3, changevecteur/4, pontAProximite/4]).
+:- module(situation, [ajoutLutin/3, getScore/3, changevecteur/4, pontAProximite/4, ia/2]).
 
 :- use_module(jeu, [ajoutLutin/3, deplaceLutin/5, suppLutin/3 , deplacePont/4, suppPont/3, pontExistant/2]).
 :- use_module(heuristique, [heuristique/3, perdPointLutinAdverse/3, gagnePointMesJoueurs/3 , gagnePointMesPontsAutour/4]).
 
 
 ia((ListeLutin, ListePont, [P1|R]), NextEtat):-
+    writeln("passe dans l'ia"),
     max_n_elag((ListeLutin, ListePont, [P1|R]), P1, 6, [(vert,0),(bleu,0),(rouge,0),(jaune,0)], NextScore, [(vert,-100000000000), (bleu,-100000000000), (rouge,-100000000000), (jaune,-100000000000)], NextEtat).
 
 /* ################################################################################################################## */
