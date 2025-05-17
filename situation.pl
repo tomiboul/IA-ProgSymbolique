@@ -5,7 +5,7 @@
 
 
 ia((ListeLutin, ListePont, [P1|R]), NextEtat):-
-    max_n((ListeLutin, ListePont, [P1|R]), P1, 3, [(vert,0),(bleu,0),(rouge,0),(jaune,0)], NextScore, [(rouge, 10000000), (jaune, 10000000),(vert,10000000), (bleu, 10000000)], none, NextEtat).
+    max_n_elag((ListeLutin, ListePont, [P1|R]), P1, 6, [(vert,0),(bleu,0),(rouge,0),(jaune,0)], NextScore, [(vert,-100000000000), (bleu,-100000000000), (rouge,-100000000000), (jaune,-100000000000)], NextEtat).
 
 /* ################################################################################################################## */
 /* ######################################## partie où on gere les tours ############################################# */
@@ -115,12 +115,12 @@ max_n_elag((ListeLutin, ListePont, OrdreJeu),JoueurActuel, _, Score, NextScore, 
 max_n_elag((ListeLutin, ListePont, Joueurs),JoueurActuel , _, Score, NextScore, _, (ListeLutin, ListePont, Joueurs)):- %Depth
     plusLutins(ListeLutin, ListePont, JoueurActuel),
     %%rotation(Joueurs, NouveauTourDeJoueur),
-    negative_infini(X), writeln("on passe par le cas de base 2"),
+    negative_infini(X), 
     changevecteur(Score, JoueurActuel, X, NextScore),!.
     
 %% cas de base 3 : profondeur arrivé à une feuille.
 max_n_elag((ListeLutin, ListePont, OrdreJeu),_, 0, _, NextScore,  CurrentBest, (ListeLutin, ListePont, OrdreJeu)):- % JoueurActuel, CurrentBest
-    heuristique((ListeLutin, ListePont, OrdreJeu), [(vert,0),(bleu,0),(rouge,0),(jaune,0)], NextScore),writeln("on passe par le cas de base 3"),!.
+    heuristique((ListeLutin, ListePont, OrdreJeu), [(vert,0),(bleu,0),(rouge,0),(jaune,0)], NextScore),!.
     
 
 max_n_elag((ListeLutin, ListePont, [JoueurActuel,NextPlayer|ResteJoueurs]), JoueurActuel, Depth, Score, NextScore, CurrentBest, (NextListeLutin, NextListePont, NextOrdreJeu)):-
@@ -129,34 +129,31 @@ max_n_elag((ListeLutin, ListePont, [JoueurActuel,NextPlayer|ResteJoueurs]), Joue
     %%negative_infini(X),
     %%InitScore = [(vert,X), (bleu,X), (rouge,X), (jaune,X)],
 
-    evaluer_etats(ListeEtat, NextPlayer, NewDepth, CurrentBest, CurrentBest, (NextListeLutin, NextListePont, NextOrdreJeu), NextScore),
-    writeln("On a trouvé le score : " + NextScore).
+    evaluer_etats(ListeEtat, NextPlayer, NewDepth, CurrentBest, ([],[],[]), (NextListeLutin, NextListePont, NextOrdreJeu), NextScore).
+   
 
-evaluer_etats([], _, _, BestScore, BestEtat, BestEtat, BestScore):-writeln("le final score est : " + BestEtat).
+evaluer_etats([], _, _, BestScore, BestEtat, BestEtat, BestScore).
 
 evaluer_etats([Etat | Reste], JoueurActuel, Depth, CurrentBestScore, CurrentBestEtat, BestEtatFinal, BestScoreFinal) :-
     %%évalue la branche et assure qu'on va voir tout en bas à gauche
-    max_n_elag(Etat, JoueurActuel, Depth, CurrentBestScore, Score, _, _),writeln("initialisation terminée"),writeln(CurrentBestEtat),
-    getScore(Score, Joueur, S),
-    getScore(CurrentBestScore, Joueur, B),
-    ( writeln("S : " + S), writeln("B : " + B),
-        S =< B ->
-            (  writeln("on élague"),
-              BestEtatFinal = Etat,
-              BestScoreFinal = Score
-            )
+    negative_infini(X),
+    InitScore = [(vert,X), (bleu,X), (rouge,X), (jaune,X)],
+    max_n_elag(Etat, JoueurActuel, Depth, InitScore, Score, CurrentBestScore, _),
+    getScore(Score, JoueurActuel, S),
+
+    getScore(CurrentBestScore, JoueurActuel, B),
+    ( S < B ->
+            (BestEtatFinal = Etat,
+            BestScoreFinal = Score)
         ;
             (
-                writeln("on élague pas"),
-                getScore(CurrentBestScore, JoueurActuel, SBest),
-                (S > SBest ->
-                    NewBestScore = Score,
-                    NewBestEtat = Etat
-                ;
-                    NewBestScore = CurrentBestScore,
-                    NewBestEtat = CurrentBestEtat
-                ),
-                evaluer_etats(Reste, JoueurActuel, Depth, NewBestScore, NewBestEtat, BestEtatFinal, BestScoreFinal)
+            getScore(CurrentBestScore, JoueurActuel, SBest),
+            (S > SBest ->NewBestScore = Score,NewBestEtat = Etat
+            ;
+            NewBestScore = CurrentBestScore,
+            NewBestEtat = CurrentBestEtat
+            ),
+            evaluer_etats(Reste, JoueurActuel, Depth, NewBestScore, NewBestEtat, BestEtatFinal, BestScoreFinal)
             )
     ).
 
