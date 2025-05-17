@@ -1,10 +1,10 @@
 const gameState = {
     boardSize: 6,
     players: [
-      { colour: "green", type: "human", elves: [], eliminated: false },
-      { colour: "blue", type: "AI", elves: [], eliminated: false },
-      { colour: "yellow", type: "human", elves: [], eliminated: false },
-      { colour: "red", type: "AI", elves: [], eliminated: false }
+      { colour: "vert", type: "human", elves: [], eliminated: false },
+      { colour: "bleu", type: "AI", elves: [], eliminated: false },
+      { colour: "jaune", type: "human", elves: [], eliminated: false },
+      { colour: "rouge", type: "AI", elves: [], eliminated: false }
     ],
     currentPlayerIndex: 0,
     phase: "starting", // "starting" or "placement" or "playing"
@@ -87,10 +87,10 @@ const gameState = {
         this.boardSize = 6;
 
         this.players = [
-            { colour: "green", type: "human", elves: [], eliminated: false },
-            { colour: "blue", type: "AI", elves: [], eliminated: false },
-            { colour: "yellow", type: "human", elves: [], eliminated: false },
-            { colour: "red", type: "AI", elves: [], eliminated: false }
+            { colour: "vert", type: "human", elves: [], eliminated: false },
+            { colour: "bleu", type: "AI", elves: [], eliminated: false },
+            { colour: "jaune", type: "human", elves: [], eliminated: false },
+            { colour: "rouge", type: "AI", elves: [], eliminated: false }
         ];
 
         this.currentPlayerIndex = 0;
@@ -136,16 +136,16 @@ async function handlePlacementTurn(state) {
     elfImage.draggable = true;
 
     switch (currentPlayer.colour) {
-        case "green":
+        case "vert":
             elfImage.src = "images/lutin_vert.png";
             break;
-        case "blue":
+        case "bleu":
             elfImage.src = "images/lutin_bleu.png";
             break;
-        case "yellow":
+        case "jaune":
             elfImage.src = "images/lutin_jaune.png";
             break;
-        case "red":
+        case "rouge":
             elfImage.src = "images/lutin_rouge.png";
             break;
     }
@@ -686,12 +686,18 @@ function isElfBlocked(x, y, state) {
         const newX = x + dx;
         const newY = y + dy;
 
-        if (newX < 0 || newX >= state.boardSize || newY < 0 || newY >= state.boardSize) {
+        if (newX < 0 || newX > state.boardSize || newY < 0 || newY > state.boardSize) {
             continue;
         }
 
-        const bridgeKey = state.bridgeKey(x, y, newX, newY);
-        if (state.bridges.has(bridgeKey) && checkIfCellIsFree(newX, newY, state)) {
+        let bridgeKey;
+        if (newX > x || newY>y){
+            bridgeKey = state.bridgeKey(x, y, newX, newY);
+        }else{
+            bridgeKey = state.bridgeKey(newX, newY, x, y);
+        }
+        
+        if (state.bridges.has(bridgeKey)) {
             return false; // At least one valid move exists
         }
     }
@@ -722,6 +728,36 @@ async function waitForClickOnCell() {
 // checkForLoser() mise à jour ✅
 // returns the index of the eliminated player
 function checkForLoser(state) {
+    
+    //eliminates the blocked elves
+    for (const player of state.players){
+        for (let i = 0; i<player.elves.length; i++){
+            if (isElfBlocked(player.elves[i][0],player.elves[i][1], state)){
+                player.elves[i][2] = true;
+                console.log("cramptés\n");
+                
+            
+                const cellId = `${player.elves[i][0]}-${player.elves[i][1]}`;
+                const lutin_id = `lutin-${player.elves[i][0]}-${player.elves[i][1]}`;
+                const elf = document.getElementById(lutin_id);
+                const cell = document.getElementById(cellId);
+                console.log(`cellID : ${cellId}`);
+                console.log(`cell : ${cell}`);
+                if (cell){
+                    cell.classList.remove('drag-over');
+                }
+
+                if (elf) {
+                    elf.remove(); // Supprime du DOM
+                    console.log(`Removed elf`);
+                }
+
+                //player.elves.remove([player.elves[i][0],player.elves[i][1],true]);
+                player.elves.pop(i);
+            }
+        }
+    }
+    
     let eliminatedPlayers = [];
     
     if(state.phase === "playing") {
@@ -731,10 +767,11 @@ function checkForLoser(state) {
                 player.eliminated = true;
                 eliminatedPlayers.push(i);
                 console.log(`Player ${player.colour} eliminated since all of their elves were stuck`);
-            }
+            } 
         }
     }
     return eliminatedPlayers;
+
 }
 
 // checkIfGameFinished() mise à jour ✅
@@ -804,7 +841,7 @@ async function pontuXL(state) {
         setNextTurn(state);
         console.log(`Next player index: ${state.currentPlayerIndex}`);
         console.log("voila les lutins")
-        sendtobackend()
+        
     }
 
     console.log("Game finished.");
@@ -830,13 +867,13 @@ function sendtobackend() {
       
       let turnorder = [];
         if (gameState.currentPlayerIndex === 0) {
-            turnorder = ['green', 'blue', 'yellow', 'red'];
+            turnorder = ['vert', 'bleu', 'jaune', 'rouge'];
         } else if (gameState.currentPlayerIndex === 1) {
-            turnorder = ['blue', 'yellow', 'red', 'green'];
+            turnorder = ['bleu', 'jaune', 'rouge', 'vert'];
         } else if (gameState.currentPlayerIndex === 2) {
-            turnorder = ['yellow', 'red', 'green', 'blue'];
+            turnorder = ['jaune', 'rouge', 'vert', 'bleu'];
         } else if (gameState.currentPlayerIndex === 3) {
-            turnorder = ['red', 'green', 'blue', 'yellow'];
+            turnorder = ['rouge', 'vert', 'bleu', 'jaune'];
         }
 
         const turnorderstring = '[' + turnorder.join(',') + ']';
