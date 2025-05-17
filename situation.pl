@@ -52,15 +52,10 @@ max_n((ListeLutin, ListePont, OrdreJeu),_, 0, _, NextScore, _, CurrentBest, (Lis
 max_n((ListeLutin, ListePont, [JoueurActuel,NextPlayer|ResteJoueurs]), JoueurActuel, Depth, Score, NextScore, Bornes, none, (NextListeLutin, NextListePont, NextOrdreJeu)):-
     etatsPossibles((ListeLutin, ListePont,[JoueurActuel, NextPlayer|ResteJoueurs]),JoueurActuel, [PremierEtat|ResteEtat]),
     length([PremierEtat|ResteEtat], Prout),
-    %%writeln("prout = " + Prout),
     NewDepth is Depth -1,
     
     %%check le premier cas, la branche tout à gauche pour avoir une branche d'initialisation
     max_n(PremierEtat, NextPlayer, NewDepth, Score, NewSinit, _, _,CurrentEtat),
-    %%writeln(NewSinit),
-    %%writeln("AAAAAAAAAAAH"),
-    %%writeln(CurrentBest + "est comparé à" + NewSinit),
-    %%writeln(InitBornes + "est comparé à" + NewSinit),
     InitBornes = NewSinit,
     CurrentBest = NewSinit,
     
@@ -83,7 +78,6 @@ max_n((ListeLutin, ListePont, [JoueurActuel,NextPlayer|ResteJoueurs]), JoueurAct
     etatsPossibles((ListeLutin, ListePont,[JoueurActuel, NextPlayer|ResteJoueurs]),JoueurActuel, ListeEtat),
     NewDepth is Depth -1,
     length(ListeEtat, Prout),
-    %%writeln("prout" +Prout),
 
     %%récupère tous les scores des coups possibles
     
@@ -97,8 +91,6 @@ max_n((ListeLutin, ListePont, [JoueurActuel,NextPlayer|ResteJoueurs]), JoueurAct
             Scores),
         
     negative_infini(X),
-    %%writeln(Scores),
-    %%writeln("\n\n\n"),
     %%récupère l'état qui propose le meilleur score parmis tous ceux renvoyés par le findall
     findBestMove(Scores, JoueurActuel, (([],[],[]), [(vert, X), (bleu, X), (rouge, X), (jaune,X)]), ((NextListeLutin, NextListePont, NextOrdreJeu), NextScore)), !.
 
@@ -125,10 +117,11 @@ max_n_elag((ListeLutin, ListePont, OrdreJeu),_, 0, _, NextScore,  CurrentBest, (
 
 max_n_elag((ListeLutin, ListePont, [JoueurActuel,NextPlayer|ResteJoueurs]), JoueurActuel, Depth, Score, NextScore, CurrentBest, (NextListeLutin, NextListePont, NextOrdreJeu)):-
     etatsPossibles((ListeLutin, ListePont,[JoueurActuel, NextPlayer|ResteJoueurs]),JoueurActuel, ListeEtat),
+
     NewDepth is Depth -1,
     %%negative_infini(X),
     %%InitScore = [(vert,X), (bleu,X), (rouge,X), (jaune,X)],
-
+    
     evaluer_etats(ListeEtat, NextPlayer, NewDepth, CurrentBest, ([],[],[]), (NextListeLutin, NextListePont, NextOrdreJeu), NextScore).
    
 
@@ -138,9 +131,10 @@ evaluer_etats([Etat | Reste], JoueurActuel, Depth, CurrentBestScore, CurrentBest
     %%évalue la branche et assure qu'on va voir tout en bas à gauche
     negative_infini(X),
     InitScore = [(vert,X), (bleu,X), (rouge,X), (jaune,X)],
+    
     max_n_elag(Etat, JoueurActuel, Depth, InitScore, Score, CurrentBestScore, _),
     getScore(Score, JoueurActuel, S),
-
+    
     getScore(CurrentBestScore, JoueurActuel, B),
     ( S < B ->
             (BestEtatFinal = Etat,
@@ -207,15 +201,7 @@ plusLutinsAdverses(_, _, [], _).
 plusLutinsAdverses(ListeLutin, ListePont, [C1|Reste], Couleur):-
     (C1==Couleur)->plusLutinsAdverses(ListeLutin, ListePont, Reste, Couleur); plusLutins(ListeLutin, ListePont, C1),plusLutinsAdverses(ListeLutin, ListePont, Reste, Couleur).
 
-/*
-exec_ia(NextEtat, NextScore):-max_n(
-    ([(vert, 1, 2), (vert, 1, 1), (rouge, 6, 6), (rouge, 5, 6), (rouge, 4, 6), (jaune, 1, 6), (jaune, 1, 5), (bleu, 2, 4), (bleu, 3, 3)], [(1,1)-(1,2),(1,1)-(2,1),(1,2)-(1,3),(1,2)-(2,2),(1,3)-(1,4),(1,3)-(2,3),(1,4)-(1,5),(1,4)-(2,4),(1,5)-(1,6),(1,5)-(2,5),(1,6)-(2,6),(2,1)-(2,2),(2,1)-(3,1),(2,2)-(2,3),(2,2)-(3,2),(2,3)-(2,4),(2,4)-(3,4),(2,5)-(2,6),(2,5)-(3,5),(2,6)-(3,6),(3,1)-(3,2),(3,1)-(4,1),(3,2)-(4,2),(3,3)-(3,4),(3,3)-(4,3),(3,4)-(3,5),(3,4)-(4,4),(3,5)-(3,6),(3,5)-(4,5),(3,6)-(4,6),(4,1)-(4,2),(4,1)-(5,1),(4,2)-(4,3),(4,2)-(5,2),(4,3)-(4,4),(4,3)-(5,3),(4,4)-(4,5),(4,4)-(5,4),(4,5)-(4,6),(4,5)-(5,5),(4,6)-(5,6),(5,1)-(5,2),(5,1)-(6,1),(5,2)-(5,3),(5,2)-(6,2),(5,3)-(5,4),(5,3)-(6,3),(5,4)-(5,5),(5,4)-(6,4),(5,5)-(5,6),(5,5)-(6,5),(5,6)-(6,6),(6,1)-(6,2),(6,2)-(6,3),(6,3)-(6,4),(6,4)-(6,5),(6,5)-(6,6)], [jaune, vert, rouge, bleu]), 
-    jaune, 2, [(vert,0),(bleu,0),(rouge,0),(jaune,0)], 
-    NextScore,
-    [(rouge, 10000000), (jaune, 10000000), (vert,10000000), (bleu, 10000000)], 
-    none, 
-    NextEtat).
-*/
+
 
 /*
     * Renvoie le meilleur move à faire, et son score associé  (in, in, in, out) (fonctionnel)
@@ -243,10 +229,9 @@ findBestMove([(Etat, Score)|Reste], JoueurActuel, (MeilleurEtatPrecedent, Meille
 * Renvoie les coups possibles à partir d'un état (in, in, out)
 */
 etatsPossibles((ListeLutin, ListePont, OrdreJeu), JoueurActuel, ListeEtat):-
-    pontInteressantADeplacerOuSupprimerV2((ListeLutin, ListePont, OrdreJeu),JoueurActuel, ListePontDeplacer, ListePontSupprimer),
-    lutinLePlusEnDanger((ListeLutin, ListePont, OrdreJeu), JoueurActuel, (none, none, none), 10000, (CouleurLutinEnDanger, XLutinEnDanger, YLutinEnDanger), _),
+    pontInteressantADeplacerOuSupprimerV2((ListeLutin, ListePont, OrdreJeu),JoueurActuel, ListePontDeplacer, ListePontSupprimer), 
+    lutinLePlusEnDanger((ListeLutin, ListePont, OrdreJeu), ListeLutin, JoueurActuel, (none, none, none), 10000, (CouleurLutinEnDanger, XLutinEnDanger, YLutinEnDanger), _),
     rotation(OrdreJeu, OrdreJeuPossible),
-   
     findall(
         (ListeLutinPossible, ListePontPossible, OrdreJeuPossible),
         ((CouleurLutinEnDanger, XLutinEnDanger, YLutinEnDanger) = (JoueurActuel,X,Y),deplaceLutin((JoueurActuel, X, Y), (JoueurActuel, X1, Y1),ListePont, ListeLutin, ListeLutinPossible),
@@ -274,19 +259,19 @@ etatsPossiblesSansModif((ListeLutin, ListePont, OrdreJeu), JoueurActuel, ListeEt
 ##########################################################################################################################################
 */
 
-lutinLePlusEnDanger(([], ListePont, OrdreJeu), JoueurActuel, Lutin,NbrPonts, Lutin, NbrPonts).
-lutinLePlusEnDanger(([(Couleur, X,Y)|ResteLutin], ListePont, OrdreJeu), JoueurActuel, Lutin, NbrPonts, NewLutin, NewPonts):-
+lutinLePlusEnDanger(([], ListePont, OrdreJeu), ListeLutin,JoueurActuel, Lutin,NbrPonts, Lutin, NbrPonts).
+lutinLePlusEnDanger(([(Couleur, X,Y)|ResteLutin], ListePont, OrdreJeu), ListeLutin, JoueurActuel, Lutin, NbrPonts, NewLutin, NewPonts):-
     (Couleur == JoueurActuel)->
     (
         (
         nbrPontPresLutin((JoueurActuel, X,Y), ListePont, 0, Nbr),
-        (Nbr=<NbrPonts)->
-            lutinLePlusEnDanger((ResteLutin, ListePont, OrdreJeu), JoueurActuel, (JoueurActuel, X, Y), Nbr, NewLutin, NewPonts)
+        (Nbr=<NbrPonts, findall(ListeLutinPossible, deplaceLutin((JoueurActuel, X,Y), (JoueurActuel, X1,Y1), ListePont, ListeLutin, ListeLutinPossible), L), length(L, Skibidi), Skibidi \= 0)->
+            lutinLePlusEnDanger((ResteLutin, ListePont, OrdreJeu), ListeLutin, JoueurActuel, (JoueurActuel, X, Y), Nbr, NewLutin, NewPonts)
             ;
-            lutinLePlusEnDanger((ResteLutin, ListePont, OrdreJeu), JoueurActuel, Lutin, NbrPonts, NewLutin, NewPonts)
+            lutinLePlusEnDanger((ResteLutin, ListePont, OrdreJeu), ListeLutin, JoueurActuel, Lutin, NbrPonts, NewLutin, NewPonts)
         )
     );
-    lutinLePlusEnDanger((ResteLutin, ListePont, OrdreJeu), JoueurActuel, Lutin, NbrPonts, NewLutin, NewPonts).
+    lutinLePlusEnDanger((ResteLutin, ListePont, OrdreJeu), ListeLutin, JoueurActuel, Lutin, NbrPonts, NewLutin, NewPonts).
 
 
 
@@ -309,33 +294,22 @@ nbrPontPresLutin(Lutin, [Pont | RestePont], Nombre, NewNombre):-
 
 %%heuristique de choix de pont stratégiquement intéressant à prendre en compte pour limiter les appels récursifs
 pontInteressantADeplacerOuSupprimer((ListeLutin, ListePont, OrdreJeu), JoueurActuel, ListePontDeplacer, ListePontSupprimer):-
-    %%length(ListePont, Z),
-    %%writeln("TailleListePont : " + Z),
     
     %%ponts intéressants à déplcer, ponts au contact d'un lutin adverse ou allié
     findall((Pont),(member(Pont, ListePont),pontPresLutin(Pont, ListeLutin, none)),ListePontDeplac),
     sort(ListePontDeplac, ListePontDeplacer),
-    %%length(ListePontDeplacer, T),
-    %%writeln("TailleDeplacer : "+ T),
+
     findall((Pont2), (member(Pont2, ListePontDeplacer), pontPresLutin(Pont2, ListeLutin, JoueurActuel)), ListePontSupp),
     sort(ListePontSupp, ListePontSupprimer).
-    %%length(ListePontSupprimer, N),
-    %%writeln("TailleSupp : " + N).
-
 
 %%heuristique de choix de pont stratégiquement intéressant à prendre en compte pour limiter les appels récursifs
 pontInteressantADeplacerOuSupprimerV2((ListeLutin, ListePont, OrdreJeu), JoueurActuel, ListePontDeplacer, ListePontDeplacer):-
     length(ListePont, Z),
-    %%writeln("TailleListePont : " + Z),
     
     %%ponts intéressants à déplcer, ponts au contact d'un lutin adverse ou allié
     findall((Pont),(member(Pont, ListePont),pontPresLutin(Pont, ListeLutin, JoueurActuel)),ListePontDeplac),
     sort(ListePontDeplac, ListePontDeplacer),
     length(ListePontDeplacer, T).
-    %%writeln("TailleDeplacer : "+ T).
-
-    %%length(ListePontSupprimer, N),
-    %%writeln("TailleSupp : " + N).
 
 /*
 renvoie si tel pont est proche d'un lutin quelconque
