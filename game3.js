@@ -803,9 +803,56 @@ async function pontuXL(state) {
 
         setNextTurn(state);
         console.log(`Next player index: ${state.currentPlayerIndex}`);
+        console.log("voila les lutins")
+        sendtobackend()
     }
 
     console.log("Game finished.");
+}
+
+function sendtobackend() {
+    //aide de chatgpt pour l'affichage
+    const elfTuples = gameState.players.flatMap(player =>
+        player.elves.map(elf => [player.colour, elf[0], elf[1]])
+      );
+      const tupleString =
+      '[' + elfTuples.map(([c, x, y]) => `(${c},${x},${y})`).join(',') + ']';
+      console.log(tupleString);
+
+      const bridgeList = Array.from(gameState.bridges).map(bridge => {
+        const [from, to] = bridge.split('-');
+        const [x1, y1] = from.split(',');
+        const [x2, y2] = to.split(',');
+        return `(${x1},${y1})-(${x2},${y2})`;
+      });
+      const bridgeString = '[' + bridgeList.join(',') + ']';
+      console.log("voici le currentplayr", gameState.currentPlayerIndex)
+      
+      let turnorder = [];
+        if (gameState.currentPlayerIndex === 0) {
+            turnorder = ['green', 'blue', 'yellow', 'red'];
+        } else if (gameState.currentPlayerIndex === 1) {
+            turnorder = ['blue', 'yellow', 'red', 'green'];
+        } else if (gameState.currentPlayerIndex === 2) {
+            turnorder = ['yellow', 'red', 'green', 'blue'];
+        } else if (gameState.currentPlayerIndex === 3) {
+            turnorder = ['red', 'green', 'blue', 'yellow'];
+        }
+
+        const turnorderstring = '[' + turnorder.join(',') + ']';
+    
+      const finalString = `(${tupleString}, ${bridgeString}, ${turnorderstring})`;
+      console.log(finalString);
+
+      const dataToSend = {
+        message: {
+          elves: elfTuples,       
+          bridges: bridges,       
+          turnorder: turnorder   
+        }
+      };
+    
+      socket.send(JSON.stringify(dataToSend));
 }
 
 function deleteElvesFromDOM() {
@@ -817,6 +864,7 @@ function deleteElvesFromDOM() {
         cell.classList.remove('drag-over');
     });
 }
+
 
 const startButton = document.getElementById("startgame");
 const confirmButton = document.getElementById("confirm-button");
@@ -842,6 +890,9 @@ document.getElementById("startgame").addEventListener("click", function() {
             pontuXL(gameState);
         }
     }
+
+
+
 });
 
 
