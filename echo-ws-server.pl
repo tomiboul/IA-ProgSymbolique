@@ -1,8 +1,10 @@
 % INSTRUCTIONS
-% =swipl echo-server.pl=
+% =swipl echo-ws-server.pl=
 % =:- start_server.=
 %
 % Then navigate to http://localhost:3000 in your browser
+
+:- set_prolog_flag(encoding, utf8).
 
 
 :- module(echo_server,
@@ -16,7 +18,9 @@
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_files)).
 :- use_module(library(http/websocket)).
-:- use_module('../chat', [reponse/2]).
+%:- use_module('../chat', [reponse/2]).
+:- use_module('ChatBot/chat', [reponse/2]).
+
 
 %reponse(Query, 'reponse'). %code test pour envoyer au serveur la reponse
 
@@ -57,13 +61,6 @@ stop_server(Port) :-
 
 default_port(3000).
 
-%gpt 
-query_prolog(QueryString, Response) :-
-    term_to_atom(Term, QueryString), % On convertit la requête en terme Prolog
-    (   call(Term)   % On exécute la requête Prolog
-    ->  Response = "Requête réussie"
-    ;   Response = "Requête échouée"
-    ).
 
 %! echo(+WebSocket) is nondet.
 % This predicate is used to read in a message via websockets and echo it
