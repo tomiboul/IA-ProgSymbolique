@@ -842,6 +842,10 @@ async function pontuXL(state) {
         console.log(`Next player index: ${state.currentPlayerIndex}`);
         console.log("voila les lutins")
         
+        if(gameState.phase === "playing" && gameState.currentPlayerIndex === 1){
+            sendtobackend()
+        }
+        
     }
 
     console.log("Game finished.");
