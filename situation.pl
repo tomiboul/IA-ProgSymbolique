@@ -3,10 +3,51 @@
 :- use_module(jeu, [ajoutLutin/3, deplaceLutin/5, suppLutin/3 , deplacePont/4, suppPont/3, pontExistant/2]).
 :- use_module(heuristique, [heuristique/3, perdPointLutinAdverse/3, gagnePointMesJoueurs/3 , gagnePointMesPontsAutour/4]).
 
-
+/*Predicat d'appel à ia avec les valeurs initialisées*/
 ia((ListeLutin, ListePont, [P1|R]), NextEtat):-
     writeln("passe dans l'ia"),
     max_n_elag((ListeLutin, ListePont, [P1|R]), P1, 6, [(vert,0),(bleu,0),(rouge,0),(jaune,0)], NextScore, [(vert,-100000000000), (bleu,-100000000000), (rouge,-100000000000), (jaune,-100000000000)], NextEtat).
+
+
+/*predicat qui reformate le coup réalisé par l'ia tq 
+((couleur, x,y), (newcouleur, newx, newy), (x1,y1)-(x2,y2), (newx1,newy1)-(newx2,newy2))
+((bleu,1,2),(bleu2,2), (1,2)-(2,2), none) -> lutin déplacé et pont supprimé
+((bleu,1,2),(bleu2,2), (1,2)-(2,2), (2,2)-(2,3))-> pont rotated
+*/
+reformatage((ListeLutin, ListePont, _), ([NewCoordLutin|NewResteLutin], NewListePont, _), (CoordLutin, NewCoordLutin, CoordPont, NewCoordPont)):-
+    findLutinThatMoved(ListeLutin, [NewCoordLutin|NewResteLutin], (none,none,none), CoordLutin),
+    findBridge(ListePont, NewListePont, (CoordPont, NewCoordPont)).
+
+/*trouver le deplacement différent*/
+findLutinThatMoved([Lutin], NewListeLutin, _, Lutin).
+findLutinThatMoved([Lutin|ResteLutin], NewLutins, OldLutin, NewOldLutin):-
+    (not(isLutinInListe(Lutin, NewLutins)))->NewOldLutin = Lutin;findLutinThatMoved(ResteLutin, NewLutins, OldLutin, NewOldLutin).
+
+
+isLutinInListe(_, []):-false.
+isLutinInListe(LutinToSearch, [Lutin|ResteLutin]):-(LutinToSearch \= Lutin)-> isLutinInListe(LutinToSearch, ResteLutin);true.
+
+
+
+findBridge([Pont|RestePont], [Pont|NewRestePont], (OldPont, none)):-
+    findDifferentBridge([Pont|RestePont], [Pont|NewRestePont], OldPont).
+
+findBridge([P1,P2|RestePont], [P3,P4|NewRestePont], (OldPont, none)):-
+    P2 = P3,
+    findDifferentBridge([P1,P2|RestePont], [P3,P4|NewRestePont], OldPont).
+
+findBridge([(X1,Y1)-(X2,Y2)|RestePont], [(X3,Y3)-(X4,Y4)|NewRestePont], (OldPont, (X3,Y3)-(X4,Y4))):-
+    (X1,Y1)-(X2,Y2) \= (X3,Y3)-(X4,Y4),
+    findDifferentBridge([(X1,Y1)-(X2,Y2)|RestePont], [(X3,Y3)-(X4,Y4)|NewRestePont], OldPont).
+
+
+/*trouver le pont différent*/
+findDifferentBridge([(X1,Y1)-(X2,Y2)], _, (X1,Y1)-(X2,Y2)).
+findDifferentBridge([(X1,Y1)-(X2,Y2)|RestePont], [NewPont|NewRestePont],NewOldPont):-
+    (member((X1,Y1)-(X2,Y2), [NewPont|NewRestePont]))->findDifferentBridge(RestePont, [NewPont|NewRestePont], NewOldPont);NewOldPont = (X1,Y1)-(X2,Y2).
+
+
+
 
 /* ################################################################################################################## */
 /* ######################################## partie où on gere les tours ############################################# */
