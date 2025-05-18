@@ -1,4 +1,4 @@
-:- module(placementIA, []).
+:- module(placementIA, [iaPlacementH1/2, iaPlacementH2/2]).
 :- use_module(situation, [rotation/2]).
 
 /*
