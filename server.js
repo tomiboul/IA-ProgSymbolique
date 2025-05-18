@@ -23,18 +23,22 @@
    }
 
    socket.onmessage = function (event) {
-     console.log("Réponse du serveur chatbot : ", event.data);
+    
+     const message = new CustomEvent('Message', { detail: event.data });
+     window.dispatchEvent(message);
+     //console.log("Réponse du serveur chatbot : ", event.data);
 
-     //const response = JSON.parse(event.data);
+     const data = JSON.parse(event.data);
      
      //console.log('reponse : ', response.message);
 
-     const botBubble = document.createElement("div");
-    botBubble.classList.add("chat-response");
-    botBubble.textContent = "🦉 " + event.data;
-    chatContainer.appendChild(botBubble);
-
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+    if (data.type === "chatbot_reply") {
+      const botBubble = document.createElement("div");
+      botBubble.classList.add("chat-response");
+      botBubble.textContent = "🦉 " + data.message;
+      chatContainer.appendChild(botBubble);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
      
    };
 
