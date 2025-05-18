@@ -1,6 +1,6 @@
-
 const IAplacement = [];
 const gameState = {
+    currentTurn: 1,
     boardSize: 6,
     players: [
       { colour: "vert", type: "human", elves: [], eliminated: false },
@@ -75,16 +75,12 @@ const gameState = {
         console.warn("getBridgePossibleRotations is not implemented yet.");
         return [];
     },
-
-    rotateBridge(bridgeCoords) {
-        // Implement logic to rotate a bridge
-        // Example: Update the bridge coordinates in the state
-        console.warn("rotateBridge is not implemented yet.");
-    },
      
     selectedPawn: null,
 
     newStateInit() {
+        this.currentTurn = 1;
+
         this.boardSize = 6;
 
         this.players = [
@@ -145,7 +141,7 @@ async function attendreMessageIA() {
 async function handlePlacementTurn(state) {
     let x, y;
     
-    if (gameState.currentPlayerIndex === 0 || gameState.currentPlayerIndex === 2) {
+    if (gameState.players[gameState.currentPlayerIndex].type === "human" || true) { // RETIRER LE || TRUE
        
         do {
             const clickedCell = await waitForClickOnCell();
@@ -154,7 +150,7 @@ async function handlePlacementTurn(state) {
             x = parseInt(parts[0], 10);
             y = parseInt(parts[1], 10);
         } while (!checkIfCellIsFree(x, y, state));
-    } else if (gameState.currentPlayerIndex === 1 || gameState.currentPlayerIndex === 3) {
+    } else if (gameState.players[gameState.currentPlayerIndex].type === "AI") {
         
         if (gameState.phase === "placement") {
             sendtobackend(); 
@@ -282,37 +278,41 @@ async function handlePlayingTurn(state) {
 // }
 
 async function handleBridgeRotation(state, originalCoords) {
-    // Supprimer temporairement le pont original (visuellement et dans le state)
-    state.deleteBridge(originalCoords);
     // updateBridgeVisuals(state);
 
-    // Calculer centre actuel du pont
+    /*
     const [x1, y1, x2, y2] = originalCoords;
 
     const originX = x1;
-    const originY = y1;
+    const originY = y1;*/
 
-    // Attendre un clic sur une cellule
-    let rotatedCoords = null;
-
+   
+    let rotatedCoords = false;
+    
     while (!rotatedCoords) {
-        const cell = await waitForClickOnCell();
-        const id = cell.id;
-        const parts = id.split("-");
-        destX = parseInt(parts[0], 10);
-        destY = parseInt(parts[1], 10);
+        const clickedBridge = await waitForClickOnBridgeSpot();
+        const bridgeKey = clickedBridge.id;
+        console.warn("bridgeKey : " + bridgeKey);
+        //"x1,y1-x2,y2"
+        //"x1,y1-x2,y2"
 
-        // Tente une rotation en ce point
+        //gets the origin and destination coordinates of the new bridge
+        const parts = bridgeKey.split("-");
+
+        originParts = parts[0].split(",");
+        destParts   = parts[1].split(",");
+
+        originX = parseInt(originParts[0],10);
+        originY = parseInt(originParts[1],10);
+        destX = parseInt(destParts[0],10);
+        destY = parseInt(destParts[1],10);
+
+        
         rotatedCoords = tryRotateBridgeAt(originX, originY, destX, destY, originalCoords,state);
 
-        if (!rotatedCoords) {
-            alert("Rotation impossible à cet emplacement. Choisissez une autre cellule.");
-        }
     }
 
-    // Ajoute le pont tourné
-    state.bridges.add(state.bridgeKey(...rotatedCoords));
-    updateBridgeVisuals(state);
+    // updateBridgeVisuals(state);
 }
 
 function tryRotateBridgeAt(x1, y1, x2, y2, originalCoords, state) {
@@ -330,23 +330,22 @@ function tryRotateBridgeAt(x1, y1, x2, y2, originalCoords, state) {
 
     // Check if rotation is not out of bounds (impossible)
 
-    let newCoords;
-
     // Check if the position x1,y1->x2,y2 is free or taken by an existing bridge
+    console.warn("bridgeKey: "+ state.bridgeKey(x1,y1,x2,y2));
+    console.log(state.bridges);
     if (state.doesBridgeExist(state.bridgeKey(x1,y1,x2,y2))) {
         // This spot is not free
         console.warn("Spot is taken by an existing bridge");
         return null;
     }
 
-    // delete bridge on old spot
-    state.bridges.delete(oldBridgeKey);
-    alert(oldBridgeKey)
-
     // add bridge on the new spot
     if (state.bridges.has(newBridgeKey)){
         console.warn("Bridge already exists, cant add")
         return null;}
+
+    // delete bridge on old spot
+    state.bridges.delete(oldBridgeKey);
 
     state.bridges.add(newBridgeKey);
     console.warn(newBridgeKey);    
@@ -358,14 +357,19 @@ function tryRotateBridgeAt(x1, y1, x2, y2, originalCoords, state) {
     oldBridgeElement.style.background = "none";
 
     // add background to new bridge
-    if (isHorizontal) newBrdigeElement.style.backgroundImage=     "url(" + horizontalBridgeSource +")";
+    if (isHorizontal) {
+        newBrdigeElement.style.backgroundImage = "url(" + horizontalBridgeSource +")";
+        newBrdigeElement.style.backgroundPosition = "center";
+        newBrdigeElement.style.backgroundSize     = "cover";
+    }
     else if (isVertical) {
         newBrdigeElement.style.backgroundImage = "url(" + verticalBridgeSource +")"
         newBrdigeElement.style.backgroundPosition = "center";
         newBrdigeElement.style.backgroundSize     = "cover";
     };
 
-    return newCoords;
+    console.warn("OK");
+    return true;
 }
 
 
@@ -793,6 +797,25 @@ async function waitForClickOnCell() {
     }); 
 } 
 
+async function waitForClickOnBridgeSpot() {
+    return new Promise((resolve) => {
+        const handler = (e) => {
+            const clickedSpot = e.target.closest('.bridge');
+            if (!clickedSpot) return; // Ignore clicks outside cells
+
+                        document.querySelectorAll(".bridge").forEach(bridge => {
+                bridge.removeEventListener("click", handler);
+            });
+
+            resolve(clickedSpot); // On retourne l'emplacement de pont cliqué
+        };
+
+        document.querySelectorAll(".bridge").forEach(bridge => {
+            bridge.addEventListener("click", handler);
+        });
+    }); 
+} 
+
 
 // checkForLoser() mise à jour ✅
 // returns the index of the eliminated player
@@ -847,7 +870,7 @@ function checkForLoser(state) {
 function checkIfGameFinished(state) {
     const activePlayers = state.players.filter(player => !player.eliminated);
     const amountActivePlayers = activePlayers.length;
-
+    console.warn("AAAAAAAAAAAAAAAAAAAAAAAAAAAAH");
     if (amountActivePlayers === 1) {
         state.phase = 'finished';
         console.log("Current phase was set to 'finished'");
@@ -871,6 +894,8 @@ function setNextTurn(state) {
     } while (state.players[state.currentPlayerIndex].eliminated);
 
     console.log("(SetNextTurn) New current player index  : ", state.currentPlayerIndex);
+
+    state.currentTurn++;
 }
 
 // checkPhase() mise à jour ✅
@@ -886,34 +911,18 @@ function checkPhase(state) {
 }
 // pontuXL() mise à jour 
 async function pontuXL(state) {
-    let i = 1;
 
     // Main loop
-    while (i<100 && state.phase !== 'finished' && !checkIfGameFinished(state)) {
-        console.log(`Tour n°${i} - Joueur ${state.players[state.currentPlayerIndex].colour}`);
-        console.log(`gameState au tour ${i} : `)
+    while (state.phase !== 'finished' && !checkIfGameFinished(state)) {
+        console.log(`Tour n°${state.currentTurn} - Joueur ${state.players[state.currentPlayerIndex].colour}`);
+        
+        // Update informations about the game on the board
+        updateBoardInformations(state);
+
+        console.log(`gameState au tour ${state.currentTurn} : `)
         console.log(gameState);
         console.log(`Current phase: ${state.phase}`);
-<<<<<<< Updated upstream
-=======
 
-        console.log('Entering playTurn()');
-        await playTurn(state);
-
-        console.log(`Phase after playTurn: ${state.phase}`);
-        i++;
-
-        checkPhase(state);
-        console.log(`Phase after checkPhase: ${state.phase}`);
-
-        checkForLoser(state);
-        console.log(`Players eliminated: ${state.players.filter(p => p.eliminated).map(p => p.colour)}`);
-
-        setNextTurn(state);
-        console.log(`Next player index: ${state.currentPlayerIndex}`);
-        console.log("voila les lutins")
-        
->>>>>>> Stashed changes
         if(gameState.phase === "playing" && (gameState.currentPlayerIndex === 1 || gameState.currentPlayerIndex === 3)){
             
             console.log("voila la phase", gameState.phase);
@@ -956,7 +965,6 @@ async function pontuXL(state) {
         await playTurn(state);
 
         console.log(`Phase after playTurn: ${state.phase}`);
-        i++;
 
         checkPhase(state);
         console.log(`Phase after checkPhase: ${state.phase}`);
@@ -1073,3 +1081,50 @@ document.getElementById("startgame").addEventListener("click", function() {
 });
 
 
+function updateBoardInformations(state) {
+    // Update turn
+
+    const turn = document.getElementById("turn");
+    turn.textContent = `Tour du joueur ${state.players[state.currentPlayerIndex].colour}`;
+
+    let playerColour = null;
+    switch (state.players[state.currentPlayerIndex].colour) {
+        case "vert":
+            playerColour = "green"
+            break;
+
+        case "bleu":
+            playerColour = "blue"
+            break;
+
+        case "jaune":
+            playerColour = "yellow"
+            break;
+        
+        case "rouge":
+            playerColour = "red"
+            break;
+    }
+
+    if(playerColour) {
+        turn.style.border = "solid 2px " + playerColour;
+    }
+
+
+    // Afficher la phase: 
+    let phaseInfo = null;
+
+    if(state.phase === "placement") {
+        phaseInfo = "de placement des lutins"
+    }
+    else if(state.phase === "playing") {
+        phaseInfo = "de jeu"
+    }
+    document.getElementById("phase").textContent = `Phase ${phaseInfo}`;
+
+}
+
+function updateGameDisplay(state) {
+    document.getElementById("turn").textContent = `Tour du joueur : ${state.players[state.currentPlayerIndex].colour}`;
+    document.getElementById("phase").textContent = `Phase : ${state.phase}`;
+}

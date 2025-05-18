@@ -130,8 +130,8 @@ function dragStart(e) {
     // console.log("           State: ");
     // console.log(gameState)
 
-    if (!playerElf) {
-        console.warn("This is not your elf!");
+    if (!playerElf || gameState.players[playerIndex].eliminated) {
+        console.warn("This is not your elf, or you're eliminated!");
         e.preventDefault();
         return;
     }
