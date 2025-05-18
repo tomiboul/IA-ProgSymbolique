@@ -182,59 +182,59 @@ async function handlePlayingTurn(state) {
     } while (!moveCompleted);
 
     // Désactiver les événements de drag pour les cellules
-    disableCellDragEvents();
+    disableElvesDragEvents();
 
     // Partie gestion du pont
     await handleBridgeAction(state);
 
     // Réactiver les événements pour le prochain tour
-    enableCellDragEvents();
+    enableElvesDragEvents();
     
     return;
 }
 
-function tryRotateBridge(coords, state) {
-    const [x1, y1, x2, y2] = coords;
+// function tryRotateBridge(coords, state) {
+//     const [x1, y1, x2, y2] = coords;
 
-    // Déterminer l'orientation actuelle
-    const isHorizontal = y1 === y2;
-    const isVertical = x1 === x2;
+//     // Déterminer l'orientation actuelle
+//     const isHorizontal = y1 === y2;
+//     const isVertical = x1 === x2;
 
-    if (!isHorizontal && !isVertical) return null;
+//     if (!isHorizontal && !isVertical) return null;
 
-    // Calculer le centre du pont
-    const centerX = (x1 + x2) / 2;
-    const centerY = (y1 + y2) / 2;
+//     // Calculer le centre du pont
+//     const centerX = (x1 + x2) / 2;
+//     const centerY = (y1 + y2) / 2;
 
-    // Calculer les nouvelles coordonnées après rotation de 90°
-    let newCoords;
-    if (isHorizontal) {
-        newCoords = [
-            centerX, centerY - 0.5,
-            centerX, centerY + 0.5
-        ];
-    } else {
-        newCoords = [
-            centerX - 0.5, centerY,
-            centerX + 0.5, centerY
-        ];
-    }
+//     // Calculer les nouvelles coordonnées après rotation de 90°
+//     let newCoords;
+//     if (isHorizontal) {
+//         newCoords = [
+//             centerX, centerY - 0.5,
+//             centerX, centerY + 0.5
+//         ];
+//     } else {
+//         newCoords = [
+//             centerX - 0.5, centerY,
+//             centerX + 0.5, centerY
+//         ];
+//     }
 
-    // Vérifier que c’est bien un pont valide (sur grille entière)
-    if (!Number.isInteger(newCoords[0]) || !Number.isInteger(newCoords[1]) ||
-        !Number.isInteger(newCoords[2]) || !Number.isInteger(newCoords[3])) {
-        return null;
-    }
+//     // Vérifier que c’est bien un pont valide (sur grille entière)
+//     if (!Number.isInteger(newCoords[0]) || !Number.isInteger(newCoords[1]) ||
+//         !Number.isInteger(newCoords[2]) || !Number.isInteger(newCoords[3])) {
+//         return null;
+//     }
 
-    // Vérifier qu’il n’y a pas déjà un pont à cet emplacement
-    const key = state.bridgeKey(...newCoords);
-    if (state.bridges.has(key)) return null;
+//     // Vérifier qu’il n’y a pas déjà un pont à cet emplacement
+//     const key = state.bridgeKey(...newCoords);
+//     if (state.bridges.has(key)) return null;
 
-    // Optionnel : vérifie que les cellules sont dans les limites
-    // (ajoute un check selon la taille du plateau si besoin)
+//     // Optionnel : vérifie que les cellules sont dans les limites
+//     // (ajoute un check selon la taille du plateau si besoin)
 
-    return newCoords;
-}
+//     return newCoords;
+// }
 
 async function handleBridgeRotation(state, originalCoords) {
     // Supprimer temporairement le pont original (visuellement et dans le state)
@@ -343,8 +343,6 @@ async function handleBridgeAction(state) {
         case 'rotate':
             case 'rotate':
         await handleBridgeRotation(state, selectedBridge.coords);
-        break;
-
             break;
 
         default:
@@ -468,6 +466,26 @@ function enableCellDragEvents() {
         cell.addEventListener('dragover', dragOver);
         cell.addEventListener('dragleave', dragLeave);
         cell.addEventListener('drop', drop);
+    });
+}
+
+function disableElvesDragEvents() {
+    const elves = document.querySelectorAll('.lutin');
+    elves.forEach(elf => {
+        elf.removeEventListener('dragenter', dragEnter);
+        elf.removeEventListener('dragover', dragOver);
+        elf.removeEventListener('dragleave', dragLeave);
+        elf.removeEventListener('drop', drop);
+    });
+}
+
+function enableElvesDragEvents() {
+    const elves = document.querySelectorAll('.lutin');
+    elves.forEach(elf => {
+        elf.addEventListener('dragenter', dragEnter);
+        elf.addEventListener('dragover', dragOver);
+        elf.addEventListener('dragleave', dragLeave);
+        elf.addEventListener('drop', drop);
     });
 }
 
