@@ -5,8 +5,7 @@
 
 /*Predicat d'appel à ia avec les valeurs initialisées*/
 ia((ListeLutin, ListePont, [P1|R]), ReformatageEtat):-
-    writeln("passe dans lia"),
-    max_n_elag((ListeLutin, ListePont, [P1|R]), P1, 5, [(vert,0),(bleu,0),(rouge,0),(jaune,0)], NextScore, [(vert,-100000000000), (bleu,-100000000000), (rouge,-100000000000), (jaune,-100000000000)], NextEtat),
+    max_n_elag((ListeLutin, ListePont, [P1|R]), P1, 5, [(vert,0),(bleu,0),(rouge,0),(jaune,0)], NextScore, [(vert,-10000000000), (bleu,-10000000000), (rouge,-10000000000), (jaune,-10000000000)], NextEtat),
     reformatage((ListeLutin, ListePont, [P1|R]), NextEtat, ReformatageEtat).
 
 
@@ -94,7 +93,6 @@ max_n((ListeLutin, ListePont, OrdreJeu),_, 0, _, NextScore, _, CurrentBest, (Lis
     
 max_n((ListeLutin, ListePont, [JoueurActuel,NextPlayer|ResteJoueurs]), JoueurActuel, Depth, Score, NextScore, Bornes, none, (NextListeLutin, NextListePont, NextOrdreJeu)):-
     etatsPossibles((ListeLutin, ListePont,[JoueurActuel, NextPlayer|ResteJoueurs]),JoueurActuel, [PremierEtat|ResteEtat]),
-    length([PremierEtat|ResteEtat], Prout),
     NewDepth is Depth -1,
     
     %%check le premier cas, la branche tout à gauche pour avoir une branche d'initialisation
