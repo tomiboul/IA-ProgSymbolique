@@ -1176,10 +1176,14 @@ function resetBridgeBackgrounds() {
     document.querySelectorAll('.h-bridge-container').forEach(bridge => {
         bridge.style.backgroundImage = "url(" + horizontalBridgeSource +")";
         bridge.style.backgroundColor = '';
+        bridge.style.backgroundPosition = "center";
+        bridge.style.backgroundSize     = "cover";
     });
     document.querySelectorAll('.v-bridge-container').forEach(bridge => {
         bridge.style.backgroundImage ="url(" + verticalBridgeSource +")";
         bridge.style.backgroundColor = '';
+        bridge.style.backgroundPosition = "center";
+        bridge.style.backgroundSize     = "cover";
     });
 }
 
