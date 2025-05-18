@@ -21,6 +21,8 @@
 %:- use_module('../chat', [reponse/2]).
 :- use_module('ChatBot/chat', [reponse/2]).
 :- use_module('./situation', [ia/2]).
+:- use_module('./placementIA', [placementLutinHeuristique1/2]).
+:- use_module('./placementIA', [placementLutinHeuristique2/2]).
 
 
 %reponse(Query, 'reponse'). %code test pour envoyer au serveur la reponse
@@ -76,6 +78,47 @@ convert_elves([(ColorStr, X, Y) | T], [(ColorAtom, X, Y) | T2]) :-
     atom_string(ColorAtom, ColorStr),
     convert_elves(T, T2).
 
+convert_bridge((X1,Y1)-(X2,Y2), [[X1,Y1],[X2,Y2]]).
+
+convert_all_bridges([], []).
+convert_all_bridges([H|T], [H2|T2]) :-
+    convert_bridge(H, H2),
+    convert_all_bridges(T, T2).
+
+
+
+% A REFAIRE
+to_json_friendly((X1,Y1)-(X2,Y2), [[JX1, JY1], [JX2, JY2]]) :-
+    to_json_friendly((X1,Y1), [JX1, JY1]),
+    to_json_friendly((X2,Y2), [JX2, JY2]).
+
+% Les deux coordonées dans un tuple deviennent une liste JSON-friendly
+to_json_friendly((X,Y), [JX, JY]) :-
+    to_json_friendly(X, JX),
+    to_json_friendly(Y, JY).
+
+to_json_friendly((A,B), [JA,JB]) :-
+    to_json_friendly(A, JA),
+    to_json_friendly(B, JB).
+to_json_friendly((A,B,C), [JA,JB,JC]) :-
+    to_json_friendly(A, JA),
+    to_json_friendly(B, JB),
+    to_json_friendly(C, JC).
+to_json_friendly([H|T], [JH|JT]) :-
+    to_json_friendly(H, JH),
+    to_json_friendly(T, JT).
+to_json_friendly(X, X) :-
+    \+ compound(X).
+to_json_friendly(X, JX) :-
+    compound(X),
+    X =.. [F|Args],
+    to_json_friendly_list(Args, JArgs),
+    JX =.. [F|JArgs].
+
+to_json_friendly_list([], []).
+to_json_friendly_list([H|T], [JH|JT]) :-
+    to_json_friendly(H, JH),
+    to_json_friendly_list(T, JT).
 
 
 %! echo(+WebSocket) is nondet.
@@ -94,7 +137,7 @@ echo(WebSocket) :-
             -> 
                reponse(MsgData, Response),
                write("Response: "), writeln(Response),
-               ws_send(WebSocket, json(Response))
+               ws_send(WebSocket, json(_{ type: "chatbot_reply", message: Response }))
             ; 
               MsgData = _{elves: ElvesJson, bridges: Bridges, turnorder: TurnOrder},
               convert_all_elves(ElvesJson, Elves),
@@ -102,21 +145,21 @@ echo(WebSocket) :-
               write("Elves: "), writeln(Elves),
               write("Bridges: "), writeln(Bridges),
               write("Turn Order: "), writeln(TurnOrder),
-              write('TYPE BRIDGES: '), write_term(Bridges, [quoted(true), portray(true)]), nl,
               string_to_atom(Bridges, BridgesAtom),
               read_term_from_atom(BridgesAtom, BridgesList, []), 
+              convert_all_bridges(BridgesList, BridgesokJson),
               read_term_from_atom(TurnOrder, TurnOrderList, []),
               convert_elves(Elves, ElvesList),
               writeln(TurnOrderList),
-              
-
-              writeln('Appel ia/2...'),
               ia((ElvesList, BridgesList, TurnOrderList), Result),
-              writeln('Après ia/2'),
-              writeln(Result),
-              ws_send(WebSocket, json(Result))
-
-              
+              placementLutinHeuristique1((ElvesList, BridgesList, TurnOrderList), Result1),
+              placementLutinHeuristique2((ElvesList, BridgesList, TurnOrderList), Result2),
+              to_json_friendly(Result, JsonResult),
+              to_json_friendly(Result1, JsonResult1),
+              to_json_friendly(Result1, JsonResult2),
+              writeln(JsonResult),
+              CombinedResult = _{ result1: JsonResult, result2: JsonResult1, result3: JsonResult2  },
+              ws_send(WebSocket, json(CombinedResult))       
             )
          )
       ; writeln("Malformed message received.")

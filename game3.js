@@ -844,6 +844,14 @@ async function pontuXL(state) {
         
         if(gameState.phase === "playing" && gameState.currentPlayerIndex === 1){
             sendtobackend()
+
+            window.addEventListener('Message', (e) => {
+                console.log("Message reçu dans un autre fichier:", e.detail);
+                data = JSON.parse(e.detail);
+                console.log("HEEEEEEEEEEEEEEEEERE", JSON.stringify(data));
+
+                console.log("HEEEEEEEEEEEEEEEEERE", data);
+              });
         }
         
     }
@@ -888,8 +896,8 @@ function sendtobackend() {
       const dataToSend = {
         message: {
           elves: elfTuples,       
-          bridges: bridges,       
-          turnorder: turnorder   
+          bridges: bridgeString,       
+          turnorder: turnorderstring   
         }
       };
     
