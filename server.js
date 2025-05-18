@@ -28,7 +28,7 @@
      window.dispatchEvent(message);
      //console.log("Réponse du serveur chatbot : ", event.data);
 
-     //const response = JSON.parse(event.data);
+     const data = JSON.parse(event.data);
      
      //console.log('reponse : ', response.message);
 
