@@ -285,7 +285,7 @@ async function handlePlayingTurn(state) {
             const coords2 = previous_coord_bridge[1].replace(/[()]/g, "").split(",");
             const x1_pr_bridge = parseInt(coords2[0], 10);
             const y1_pr_bridge = parseInt(coords2[1], 10);
-
+            const previousBridgeKey = state.bridgeKey(x_pr_bridge, y_pr_bridge, x1_pr_bridge, y1_pr_bridge);
             const fromCell = document.getElementById(`${x_pr}-${y_pr}`);
             const toCell = document.getElementById(`${x_new}-${y_new}`);
             const img = document.getElementById(`lutin-${x_pr}-${y_pr}`);
@@ -301,8 +301,8 @@ async function handlePlayingTurn(state) {
             }
             if (new_bridge === "none") {
                 console.log("NONE");
-                gameState.deleteBridge(previous_bridge);
-                console.log(bridge);
+                gameState.deleteBridge(previousBridgeKey);
+                console.log(previousBridgeKey);
                 bridge.style.background = "none";
             }
             if (new_bridge !== "none") {
@@ -315,9 +315,10 @@ async function handlePlayingTurn(state) {
                 const coords2 = new_coord_bridge[1].replace(/[()]/g, "").split(",");
                 const x1_new_bridge = parseInt(coords2[0], 10);
                 const y1_new_bridge = parseInt(coords2[1], 10);
-                
+                const newbridgekey = gameState.bridgeKey(x_new_bridge, y_new_bridge, x1_new_bridge, y1_new_bridge);
+
                 bridge.style.background = "none";
-                gameState.deleteBridge(bridge);
+                gameState.deleteBridge(previousBridgeKey);
                 console.log("PREVIOUS", bridge);
 
                 const id1 = `${x_new_bridge},${y_new_bridge}-${x1_new_bridge},${y1_new_bridge}`;
@@ -335,8 +336,8 @@ async function handlePlayingTurn(state) {
                     newBrdigeElement.style.backgroundImage = "url(" + verticalBridgeSource +")"
                     newBrdigeElement.style.backgroundPosition = "center";
                     newBrdigeElement.style.backgroundSize     = "cover";
-    };
-                    
+                };
+                gameState.bridges.add(newbridgekey);      
                 
             }
             if(gameState.currentPlayerIndex === 1){       
@@ -1012,7 +1013,7 @@ function checkForLoser(state) {
     if(state.phase === "playing") {
         let i = 0;
         for (const player of state.players) {
-            if (player.elves.every(elf => elf[2])) {
+            if (player.elves.length === 0) {
                 player.eliminated = true;
                 eliminatedPlayers.push(i);
                 console.log(`Player ${player.colour} eliminated since all of their elves were stuck`);
