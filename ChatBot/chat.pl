@@ -5,6 +5,8 @@
 :- use_module(ecrire_reponse,[ecrire_reponse/1]).
 :- use_module(produire_reponse,[produire_reponse/2]).
 :- use_module(levenshtein,[lev/3]).
+%%:- use_module('../situation', [ajoutLutin/3, getScore/3, changevecteur/4, pontAProximite/4, ia/2, lutinLePlusEnDanger/6]).
+
 
 
 rules('Les règles du jeu Pontu sont les suivantes : \n
@@ -23,14 +25,18 @@ chat("Bonjour", "Bonjour, comment puis je vous aider ?").
 chat("Pourquoi", "Parce que 🧏").
 chat("Salut", "Salut, quoi de neuf ?").
 chat("Wesh", "Wesh bien ou quoi ?").
-chat("Ca va", "Wesh bien et toi ?").
+chat("Ca va", "Bien et toi ?").
 chat("Ok merci", "Avec plaisir de vous aider ! Si vous avez d autres questions n hesitez pas !").
 %%chat("Hola", "No habla español").
 chat("C est quoi les règles", Rules) :- rules(Rules).
 chat("Explique moi les règles de pontu", Rules) :- rules(Rules).
 chat("Règles de Pontu", Rules) :- rules(Rules).
 chat("C est quoi Pontu ?", Rules) :- rules(Rules).
+chat("C est quoi PontuXL ?", Rules) :- rules(Rules).
 chat("Qu est-ce que Pontu ?", Rules) :- rules(Rules).
+chat("C est quoi les règles du pontXL", Rules) :- rules(Rules).
+chat("Les règles du pontXL", Rules) :- rules(Rules).
+
 chat("Explique moi Pontu", Rules) :- rules(Rules).
 chat("Comment jouer à Pontu ?", Rules) :- rules(Rules).
 chat("Comment joue-t-on à Pontu ?", Rules) :- rules(Rules).
@@ -43,9 +49,47 @@ chat("Combien de lutins compte chaque equipe ?", "4 lutins par équipes").
 chat("Puis-je deplacer un lutin sur une case occupee par un autre lutin ?","Non, un seul lutin par case").
 chat("Combien de lutins compte chaque equipe ?", "4 lutins par équipes").
 chat("Quel pont puis-je retirer apres avoir deplace un lutin ?", "Il est permis de retirer le pont emprunte ou tout autre pont.").
+
+chat("Comment on fait pour gagner ?", "Pour gagner il faut etre le dernier joueur à posséder des lutins déplacable sur le plateau").
+chat("Comment on gagne", "Pour gagner il faut etre le dernier joueur à posséder des lutins déplacable sur le plateau").
+chat("C est quoi l objectif ", Rules):- rules(Rules).
+chat("C est quoi l objectif du jeu", Rules):- rules(Rules).
+chat("C est quoi l objectif du PontuXL", Rules):- rules(Rules).
+chat("C est quoi PontuXl ", Rules):- rules(Rules).
+chat("C est quoi le temps d une partie", "il n y a pas vraiment de temps prédéfini, seul la survie importe").
+chat("On peut avoir deux lutins sur la meme case", "Il est interdit d avoir 2 lutins sur la meme case").
+chat("Pourquoi mon lutin est supprimé", "Ton lutin est supprimé car il n a plus aucun pont a pouvoir utilisé").
+chat("Comment gagner", "Pour cela il faut anéantir tous les lutins adverses. Ils ne doivent plus avoir aucun pont à emprunter").
+chat("La taille du plateau ", "Le plateau est de dimension 6x6").
+chat("Que peut on faire avec les ponts", "Avec les ponts vous pouvez soit les supprimers soit les déplacer une fois apres avoir deplacer un de vos lutins").
+
+/*
+% partie intélligente du chatBot
+chat("Je suis le joueur rouge quel coup je dois jouer", "").
+chat("Je suis le joueur vert quel coup je dois jouer", "").
+chat("Je suis le joueur jaune quel coup je dois jouer", "").
+chat("Je suis le joueur bleu quel coup je dois jouer", "").
+
 chat("Je joue pour les lutins verts. Quel lutin me conseillez-vous de deplacer et vers quelle case ?", "Je n ai pas encore la réponse car je suis pas encore assez intelligent").
+chat("Je joue pour les lutins rouge. Quel lutin me conseillez-vous de deplacer et vers quelle case ?", "Je n ai pas encore la réponse car je suis pas encore assez intelligent").
+chat("Je joue pour les lutins jaune. Quel lutin me conseillez-vous de deplacer et vers quelle case ?", "Je n ai pas encore la réponse car je suis pas encore assez intelligent").
+chat("Je joue pour les lutins bleu. Quel lutin me conseillez-vous de deplacer et vers quelle case ?", "Je n ai pas encore la réponse car je suis pas encore assez intelligent").
+
+chat("Je suis le joueur rouge quel coup je dois jouer", "").
+chat("Je suis le joueur rouge quel coup je dois jouer", "").
+chat("Je suis le joueur rouge quel coup je dois jouer", "").
+chat("Je suis le joueur rouge quel coup je dois jouer", "").
 
 
+
+reponseToStringLutin((ListeLutin, ListePont, OrdreJeu), JoueurActuel, ResultInString):-
+   lutinLePlusEnDanger(Etat, )
+   with_output_to(string(String),
+        format("Le lutin a déplacé est le lutin (~w, ~w, ~w) car c est le lutin qui est le plus en danger", [Couleur, X, Y])
+    ).
+
+
+chat("", "").*/
 
 get_Question_BD(ResultList) :-
    findall((Question, Reponse), chat(Question, Reponse), ResultList).
