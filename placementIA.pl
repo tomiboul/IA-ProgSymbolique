@@ -9,7 +9,7 @@ listes des ponts
 
 /**
  * (IN, OUT)
- * Crée un nouveau lutin sur une base aléatoire
+ * Crée un nouveau lutin qui sera le plus éloigné des autres lutins adverses.
 */
 placementLutinHeuristique1((ListeLutin, ListePont, [Couleur|Restant]), (NextListeLutin, ListePont, NextOrdreJeu)):-
     genereListePosition(ListeLutin, AllPositionPossible),
@@ -38,8 +38,6 @@ placementLutinHeuristique2((ListeLutin, ListePont, [Couleur|Restant]), (NextList
 
 
          
-
-%coordonneeNewLutin((ListeLutin, ListePont, Ordrejeu), NewLutin):-
 
 /**
  * (IN,OUT)
@@ -96,11 +94,5 @@ genereListeDistanceMinAcc([(X, Y)|Reste], ListeLutin, Acc, ListeScoreMin):-
     distanceMin(ListeDistance, (MinDistance, _, _)), 
     genereListeDistanceMinAcc(Reste, ListeLutin, [(MinDistance, X, Y)|Acc], ListeScoreMin).
 
-/*
-genereListeDistanceMinAcc([], ListeLutin, Acc, Acc ).
-genereListeDistanceMinAcc([PositionDeLAliste|Reste], ListeLutin, Acc, ListeScoreMin ):-
-    distanceManhattan(PositionDeLAliste, ListeLutin, ListeDistance),
-    distanceMin(ListeDistance, PositionEtDistanceMin),
-    genereListeDistanceMinAcc(Reste, ListeLutin, [PositionEtDistanceMin|Acc], ListeScoreMin).
-*/
+
 
