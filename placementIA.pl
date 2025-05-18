@@ -7,7 +7,7 @@ listes des ponts
 */
 
 iaPlacementH1((ListeLutin, ListePont, [Couleur|Restant]), NewLutin):-
-    placementLutinHeuristique1(Etat, ([NewLutin|Reste], ListePont, NextordreJeu)).
+    placementLutinHeuristique1((ListeLutin, ListePont, [Couleur|Restant]), ([NewLutin|Reste], ListePont, NextordreJeu)).
 
 iaPlacementH2((ListeLutin, ListePont, [Couleur|Restant]), NewLutin):-
     placementLutinHeuristique2((ListeLutin, ListePont, [Couleur|Restant]), ([NewLutin|Reste], ListePont, NextordreJeu)).
