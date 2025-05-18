@@ -850,7 +850,33 @@ async function pontuXL(state) {
                 data = JSON.parse(e.detail);
                 console.log("HEEEEEEEEEEEEEEEEERE", JSON.stringify(data));
 
-                console.log("HEEEEEEEEEEEEEEEEERE", data);
+
+                const result1 = data.result1;
+                console.log("voici le premier resultat", JSON.stringify(result1));
+
+                const premier_elem = result1[0]
+                const deuxieme_elem = result1[1][0]
+                const troisieme_elem = result1[1][1][0]
+                const quatrieme_elem = result1[1][1][1]
+                
+                console.log("voici le premier elem", JSON.stringify(premier_elem));
+                
+                console.log("voici le 2eme elem", JSON.stringify(deuxieme_elem));
+                
+                console.log("voici le 3eme elem", JSON.stringify(troisieme_elem));
+                
+                console.log("voici le 4eme elem", JSON.stringify(quatrieme_elem));
+
+                const coord_final = reformater_coord(premier_elem);
+                console.log("FORMAT FINAL", coord_final);
+                const coord_final2 = reformater_coord(deuxieme_elem);
+                console.log("FORMAT FINAL 2", coord_final2);
+                const coord_final3 = reformater_bridge(troisieme_elem);
+                console.log("FORMAT FINAL 3", coord_final3);
+                const coord_final4 = reformater_bridge(quatrieme_elem);
+                console.log("FORMAT FINAL 3", quatrieme_elem);
+
+
               });
         }
         
@@ -859,6 +885,18 @@ async function pontuXL(state) {
     console.log("Game finished.");
 }
 
+function reformater_coord(element) {
+    const elem = `(${element[0]}, ${element[1][0]}, ${element[1][1]})`;
+
+    return elem;
+
+}
+function reformater_bridge(element) {
+    const elem = `(${element[0][0]},${element[0][1]})-(${element[1][0]},${element[1][1]})`;
+
+    return elem;
+
+}
 function sendtobackend() {
     //aide de chatgpt pour l'affichage
     const elfTuples = gameState.players.flatMap(player =>

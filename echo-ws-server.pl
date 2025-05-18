@@ -120,6 +120,14 @@ to_json_friendly_list([H|T], [JH|JT]) :-
     to_json_friendly(H, JH),
     to_json_friendly_list(T, JT).
 
+tupleToList(ListOfTuple, ListOfList):-
+    tupleToListAcc(ListOfTuple, [], ListOfList).
+tupleToListAcc([], Acc, Acc).
+tupleToListAcc([(Couleur, X, Y)|Reste],Acc, ListOfList):-
+    tupleToListAcc(Reste, [[Couleur,[ X, Y]]|Acc], ListOfList).
+tupleToListAcc([(X,Y)-(X1,Y1)|Reste],Acc, ListOfList):-
+    tupleToListAcc(Reste, [[X,Y]-[X1-Y1]|Acc], ListOfList).
+
 
 %! echo(+WebSocket) is nondet.
 % This predicate is used to read in a message via websockets and echo it
@@ -152,12 +160,15 @@ echo(WebSocket) :-
               convert_elves(Elves, ElvesList),
               writeln(TurnOrderList),
               ia((ElvesList, BridgesList, TurnOrderList), Result),
+              writeln("est bien passé dans l ia"),
               placementLutinHeuristique1((ElvesList, BridgesList, TurnOrderList), Result1),
               placementLutinHeuristique2((ElvesList, BridgesList, TurnOrderList), Result2),
               to_json_friendly(Result, JsonResult),
               to_json_friendly(Result1, JsonResult1),
-              to_json_friendly(Result1, JsonResult2),
+              to_json_friendly(Result2, JsonResult2),
               writeln(JsonResult),
+              writeln(JsonResult1),
+              writeln(JsonResult2),
               CombinedResult = _{ result1: JsonResult, result2: JsonResult1, result3: JsonResult2  },
               ws_send(WebSocket, json(CombinedResult))       
             )
