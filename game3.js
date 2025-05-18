@@ -860,7 +860,9 @@ async function pontuXL(state) {
         console.log(`Next player index: ${state.currentPlayerIndex}`);
         console.log("voila les lutins")
         
-        if(gameState.phase === "playing" && gameState.currentPlayerIndex === 1){
+        if(gameState.phase === "playing" && (gameState.currentPlayerIndex === 1 || gameState.currentPlayerIndex === 3)){
+            
+            console.log("voila la phase", gameState.phase);
             sendtobackend()
 
             window.addEventListener('Message', (e) => {
@@ -892,9 +894,32 @@ async function pontuXL(state) {
                 const coord_final3 = reformater_bridge(troisieme_elem);
                 console.log("FORMAT FINAL 3", coord_final3);
                 const coord_final4 = reformater_bridge(quatrieme_elem);
-                console.log("FORMAT FINAL 3", quatrieme_elem);
+                console.log("FORMAT FINAL 4", quatrieme_elem);
+              });
+        }
+
+        else if(gameState.phase === "placement" && (gameState.currentPlayerIndex === 1 || gameState.currentPlayerIndex === 3)){
+            sendtobackend()
+
+            window.addEventListener('Message', (e) => {
+                console.log("voila la phase", gameState.phase);
+                console.log("Message reçu dans un autre fichier:", e.detail);
+                data = JSON.parse(e.detail);
+                console.log("HEEEEEEEEEEEEEEEEERE", JSON.stringify(data));
 
 
+                const result2 = data.result2;
+                console.log("voici le premier resultat", JSON.stringify(result2));        
+
+                const coord_final1 = reformater_coord(result2);
+                console.log("FORMAT FINAL", coord_final1);
+
+                
+                const result3 = data.result3;
+                console.log("voici le premier resultat", JSON.stringify(result3));        
+
+                const coord_final2 = reformater_coord(result3);
+                console.log("FORMAT FINAL", coord_final2);
               });
         }
         
