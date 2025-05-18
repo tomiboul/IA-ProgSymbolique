@@ -4,9 +4,10 @@
 :- use_module(heuristique, [heuristique/3, perdPointLutinAdverse/3, gagnePointMesJoueurs/3 , gagnePointMesPontsAutour/4]).
 
 /*Predicat d'appel à ia avec les valeurs initialisées*/
-ia((ListeLutin, ListePont, [P1|R]), NextEtat):-
+ia((ListeLutin, ListePont, [P1|R]), ReformatageEtat):-
     writeln("passe dans l'ia"),
-    max_n_elag((ListeLutin, ListePont, [P1|R]), P1, 6, [(vert,0),(bleu,0),(rouge,0),(jaune,0)], NextScore, [(vert,-100000000000), (bleu,-100000000000), (rouge,-100000000000), (jaune,-100000000000)], NextEtat).
+    max_n_elag((ListeLutin, ListePont, [P1|R]), P1, 6, [(vert,0),(bleu,0),(rouge,0),(jaune,0)], NextScore, [(vert,-100000000000), (bleu,-100000000000), (rouge,-100000000000), (jaune,-100000000000)], NextEtat),
+    reformatage((ListeLutin, ListePont, [P1|R]), NextEtat, ReformatageEtat).
 
 
 /*predicat qui reformate le coup réalisé par l'ia tq 
