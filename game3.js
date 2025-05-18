@@ -323,15 +323,19 @@ function tryRotateBridgeAt(x1, y1, x2, y2, originalCoords, state) {
     const isHorizontal = y1 === y2;
     const isVertical = x1 === x2;
 
-    if (!isHorizontal && !isVertical) return null;
+    if (!isHorizontal && !isVertical) {
+        console.warn("Bridge rotation is either not horizontal or not vertical")
+        return null;
+    }
 
     // Check if rotation is not out of bounds (impossible)
 
     let newCoords;
 
-    // Check if a the position x1,y1->x2,y2 is free or taken by an existing bridge
+    // Check if the position x1,y1->x2,y2 is free or taken by an existing bridge
     if (state.doesBridgeExist(state.bridgeKey(x1,y1,x2,y2))) {
         // This spot is not free
+        console.warn("Spot is taken by an existing bridge");
         return null;
     }
 
@@ -340,7 +344,9 @@ function tryRotateBridgeAt(x1, y1, x2, y2, originalCoords, state) {
     alert(oldBridgeKey)
 
     // add bridge on the new spot
-    if (state.bridges.has(newBridgeKey)) return null;
+    if (state.bridges.has(newBridgeKey)){
+        console.warn("Bridge already exists, cant add")
+        return null;}
 
     state.bridges.add(newBridgeKey);
     console.warn(newBridgeKey);    
@@ -871,7 +877,7 @@ function setNextTurn(state) {
 function checkPhase(state) {
     if (state.phase === "placement") {
         for (const player of state.players) {
-            if (player.elves.length < 4) return;
+            if (player.elves.length < 1) return;
         }
 
         state.phase = "playing";
@@ -888,6 +894,26 @@ async function pontuXL(state) {
         console.log(`gameState au tour ${i} : `)
         console.log(gameState);
         console.log(`Current phase: ${state.phase}`);
+<<<<<<< Updated upstream
+=======
+
+        console.log('Entering playTurn()');
+        await playTurn(state);
+
+        console.log(`Phase after playTurn: ${state.phase}`);
+        i++;
+
+        checkPhase(state);
+        console.log(`Phase after checkPhase: ${state.phase}`);
+
+        checkForLoser(state);
+        console.log(`Players eliminated: ${state.players.filter(p => p.eliminated).map(p => p.colour)}`);
+
+        setNextTurn(state);
+        console.log(`Next player index: ${state.currentPlayerIndex}`);
+        console.log("voila les lutins")
+        
+>>>>>>> Stashed changes
         if(gameState.phase === "playing" && (gameState.currentPlayerIndex === 1 || gameState.currentPlayerIndex === 3)){
             
             console.log("voila la phase", gameState.phase);
