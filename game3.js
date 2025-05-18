@@ -317,6 +317,7 @@ async function handlePlayingTurn(state) {
                 const y1_new_bridge = parseInt(coords2[1], 10);
                 
                 bridge.style.background = "none";
+                gameState.deleteBridge(bridge);
                 console.log("PREVIOUS", bridge);
 
                 const id1 = `${x_new_bridge},${y_new_bridge}-${x1_new_bridge},${y1_new_bridge}`;
