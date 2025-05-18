@@ -21,8 +21,8 @@
 %:- use_module('../chat', [reponse/2]).
 :- use_module('ChatBot/chat', [reponse/2]).
 :- use_module('./situation', [ia/2]).
-:- use_module('./placementIA', [placementLutinHeuristique1/2]).
-:- use_module('./placementIA', [placementLutinHeuristique2/2]).
+:- use_module('./placementIA', [iaPlacementH1/2]).
+:- use_module('./placementIA', [iaPlacementH2/2]).
 
 
 %reponse(Query, 'reponse'). %code test pour envoyer au serveur la reponse
@@ -162,10 +162,10 @@ echo(WebSocket) :-
               ia((ElvesList, BridgesList, TurnOrderList), Result),
               writeln("est bien passé dans l ia"),
               writeln("passe dans heuristique 1"),
-              placementLutinHeuristique1((ElvesList, BridgesList, TurnOrderList), Result1),
+              iaPlacementH1((ElvesList, BridgesList, TurnOrderList), Result1),
               writeln("est passé dans heuristique 1"),
               writeln("passe dans heuristique 2"),
-              placementLutinHeuristique2((ElvesList, BridgesList, TurnOrderList), Result2),
+              iaPlacementH2((ElvesList, BridgesList, TurnOrderList), Result2),
               writeln("est passé dans heuristique 2"),
               to_json_friendly(Result, JsonResult),
               to_json_friendly(Result1, JsonResult1),
