@@ -141,3 +141,12 @@ suppPont(((X1, Y1)-(X2,Y2)), ListePont, NewListePont):-
     member((X1,Y1)-(X2,Y2), ListePont),
     delete(ListePont, ((X1, Y1)-(X2,Y2)), NewListePont).
 
+
+
+tupleToList(ListOfTuple, ListOfList):-
+    tupleToListAcc(ListOfTuple, [], ListOfList).
+tupleToListAcc([], Acc, Acc).
+tupleToListAcc([(Couleur, X, Y)|Reste],Acc, ListOfList):-
+    tupleToListAcc(Reste, [[Couleur,[ X, Y]]|Acc], ListOfList).
+tupleToListAcc([(X,Y)-(X1,Y1)|Reste],Acc, ListOfList):-
+    tupleToListAcc(Reste, [[X,Y]-[X1-Y1]|Acc], ListOfList).
