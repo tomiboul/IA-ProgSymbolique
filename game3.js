@@ -1172,6 +1172,17 @@ function deleteElvesFromDOM() {
 }
 
 
+function resetBridgeBackgrounds() {
+    document.querySelectorAll('.h-bridge-container').forEach(bridge => {
+        bridge.style.backgroundImage = "url(" + horizontalBridgeSource +")";
+        bridge.style.backgroundColor = '';
+    });
+    document.querySelectorAll('.v-bridge-container').forEach(bridge => {
+        bridge.style.backgroundImage ="url(" + verticalBridgeSource +")";
+        bridge.style.backgroundColor = '';
+    });
+}
+
 const startButton = document.getElementById("startgame");
 const confirmButton = document.getElementById("confirm-button");
 
@@ -1188,6 +1199,7 @@ document.getElementById("startgame").addEventListener("click", function() {
             console.log("partie lancée");
             // Launch a new game
             deleteElvesFromDOM();
+            resetBridgeBackgrounds();
             // newGameInit(gameState);
             gameState.newStateInit();
             console.log(gameState);
