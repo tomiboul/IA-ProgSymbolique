@@ -200,6 +200,7 @@ body {
     align-items: center;
 
     border-bottom: solid 2px #8EC346;
+    border-radius: 8px;
     
 }
 
@@ -304,4 +305,7 @@ background-color: lightgreen;
   }
   
 
- 
+#chat-messages {
+    margin-bottom: 20px;
+    height: 85%;
+} 

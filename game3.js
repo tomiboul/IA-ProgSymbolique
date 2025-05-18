@@ -141,7 +141,7 @@ async function attendreMessageIA() {
 async function handlePlacementTurn(state) {
     let x, y;
     
-    if (gameState.players[gameState.currentPlayerIndex].type === "human" || true) { // RETIRER LE || TRUE
+    if (gameState.players[gameState.currentPlayerIndex].type === "human") { // RETIRER LE || TRUE
        
         do {
             const clickedCell = await waitForClickOnCell();
@@ -1052,7 +1052,7 @@ function setNextTurn(state) {
 function checkPhase(state) {
     if (state.phase === "placement") {
         for (const player of state.players) {
-            if (player.elves.length < 1) return;
+            if (player.elves.length < 4) return;
         }
 
         state.phase = "playing";
