@@ -28,13 +28,19 @@ placementLutinHeuristique1((ListeLutin, ListePont, [Couleur|Restant]), (NextList
  * Crée un nouveau lutin sur une base aléatoire
 */
 placementLutinHeuristique2((ListeLutin, ListePont, [Couleur|Restant]), (NextListeLutin, ListePont, NextOrdreJeu)):-
-    random_between(1, 6, NewX),
-    random_between(1, 6, NewY),
-    not(member((_, NewX, NewY), ListeLutin)),
+    generePositionHeuristique2(ListeLutin, NewX, NewY),
+    not(member((_, NewX, NewY), ListeLutin)),  % facultatif car déjà vérifié dans generePosition
     NextListeLutin = [(Couleur, NewX, NewY)|ListeLutin],
     rotation([Couleur|Restant], NextOrdreJeu), !.
 
 
+generePositionHeuristique2(ListeLutin, X, Y):-
+    random_between(1, 6, NewX),
+    random_between(1, 6, NewY),
+    (member((_, NewX, NewY), ListeLutin) ->
+        generePositionHeuristique2(ListeLutin, X, Y) 
+        ;   
+    (X = NewX, Y = NewY)). 
 
 
          
