@@ -213,8 +213,157 @@ function waitForClickOnBridge(state) {
         });
     });
 }
+async function attendreMessageIAPourDeplacement() {
+    return new Promise((resolve) => {
+        const handler = (e) => {
+            window.removeEventListener('Message', handler); 
+            data = JSON.parse(e.detail);
+
+            const result1 = data.result1;
+            console.log("voici le premier resultat", JSON.stringify(result1));
+    
+            const premier_elem = result1[0]
+            const deuxieme_elem = result1[1][0]
+            const troisieme_elem = result1[1][1][0]
+            const quatrieme_elem = result1[1][1][1]
+            
+            console.log("voici le premier elem", JSON.stringify(premier_elem));
+            
+            console.log("voici le 2eme elem", JSON.stringify(deuxieme_elem));
+            
+            console.log("voici le 3eme elem", JSON.stringify(troisieme_elem));
+            
+            console.log("voici le 4eme elem", JSON.stringify(quatrieme_elem));
+    
+            const coord_final = reformater_coord(premier_elem);
+            console.log("FORMAT FINAL", coord_final);
+            const coord_final2 = reformater_coord(deuxieme_elem);
+            console.log("FORMAT FINAL 2", coord_final2);
+            const coord_final3 = reformater_bridge(troisieme_elem);
+            console.log("FORMAT FINAL 3", coord_final3);
+            let coord_final4;
+            if(quatrieme_elem === "none"){
+                coord_final4 = "none"
+            }
+            else{             
+                coord_final4 = reformater_bridge(quatrieme_elem);
+                console.log("FORMAT FINAL 4", coord_final4);
+            }
+
+            resolve({
+                previous_coord: coord_final,
+                new_coord: coord_final2,
+                previous_bridge: coord_final3,
+                new_bridge: coord_final4
+            });
+            
+        };
+
+        window.addEventListener('Message', handler);
+    });
+}
 
 async function handlePlayingTurn(state) {
+    if (gameState.currentPlayerIndex === 1 || gameState.currentPlayerIndex === 3) {
+        if (gameState.phase === "playing") {
+            sendtobackend(); 
+
+            const { previous_coord, new_coord, previous_bridge, new_bridge } = await attendreMessageIAPourDeplacement(); 
+
+            const previous_coordonnee = previous_coord.replace(/[()]/g, "").split(", ");
+            const x_pr = parseInt(previous_coordonnee[1], 10);
+            const y_pr = parseInt(previous_coordonnee[2], 10);
+
+            const new_coordonnee = new_coord.replace(/[()]/g, "").split(", ");
+            const x_new = parseInt(new_coordonnee[1], 10);
+            const y_new = parseInt(new_coordonnee[2], 10);
+
+            const previous_coord_bridge = previous_bridge.split("-"); 
+            const coords1 = previous_coord_bridge[0].replace(/[()]/g, "").split(",");
+            const x_pr_bridge = parseInt(coords1[0], 10);
+            const y_pr_bridge = parseInt(coords1[1], 10);
+            const coords2 = previous_coord_bridge[1].replace(/[()]/g, "").split(",");
+            const x1_pr_bridge = parseInt(coords2[0], 10);
+            const y1_pr_bridge = parseInt(coords2[1], 10);
+
+            const fromCell = document.getElementById(`${x_pr}-${y_pr}`);
+            const toCell = document.getElementById(`${x_new}-${y_new}`);
+            const img = document.getElementById(`lutin-${x_pr}-${y_pr}`);
+
+            const id = `${x_pr_bridge},${y_pr_bridge}-${x1_pr_bridge},${y1_pr_bridge}`;
+            console.log("VOILA L'ID", id);
+            const bridge = document.getElementById(id);
+
+            
+            if (img && toCell) {
+                img.id = `lutin-${x_new}-${y_new}`;
+                toCell.appendChild(img);
+            }
+            if (new_bridge === "none") {
+                console.log("NONE");
+                gameState.deleteBridge(previous_bridge);
+                console.log(bridge);
+                bridge.style.background = "none";
+            }
+            if (new_bridge !== "none") {
+                
+                console.log("PAS NONE");
+                const new_coord_bridge = new_bridge.split("-"); 
+                const coords1 = new_coord_bridge[0].replace(/[()]/g, "").split(",");
+                const x_new_bridge = parseInt(coords1[0], 10);
+                const y_new_bridge = parseInt(coords1[1], 10);
+                const coords2 = new_coord_bridge[1].replace(/[()]/g, "").split(",");
+                const x1_new_bridge = parseInt(coords2[0], 10);
+                const y1_new_bridge = parseInt(coords2[1], 10);
+                
+                bridge.style.background = "none";
+                console.log("PREVIOUS", bridge);
+
+                const id1 = `${x_new_bridge},${y_new_bridge}-${x1_new_bridge},${y1_new_bridge}`;
+                const newBrdigeElement = document.getElementById(id1);
+                console.log(newBrdigeElement);
+                const isHorizontal = y_new_bridge === y1_new_bridge;
+                const isVertical = x_new_bridge === x1_new_bridge;
+                // add background to new bridge
+                if (isHorizontal) newBrdigeElement.style.backgroundImage=     "url(" + horizontalBridgeSource +")";
+                else if (isVertical) {
+                    newBrdigeElement.style.backgroundImage = "url(" + verticalBridgeSource +")"
+                    newBrdigeElement.style.backgroundPosition = "center";
+                    newBrdigeElement.style.backgroundSize     = "cover";
+    };
+                    
+                
+            }
+            if(gameState.currentPlayerIndex === 1){       
+                const elvesRouge = gameState.players[1].elves;
+                for (let i = 0; i < elvesRouge.length; i++) {
+                    const [x, y, stuck] = elvesRouge[i];
+                    if (x === x_pr && y === y_pr){    
+                        console.log(`Elfe trouvé à l'index ${i} avec coordonnées (${x},${y})`);
+                        elvesRouge[i][0] = x_new;  
+                        elvesRouge[i][1] = y_new;  
+                        console.log(`Coordonnées mises à jour en (${x_new},${y_new})`);
+                        break;
+                    }
+                }
+            }
+            if(gameState.currentPlayerIndex === 3){       
+                const elvesRouge = gameState.players[3].elves;
+                for (let i = 0; i < elvesRouge.length; i++) {
+                    const [x, y, stuck] = elvesRouge[i];
+                    if (x === x_pr && y === y_pr){    
+                        console.log(`Elfe trouvé à l'index ${i} avec coordonnées (${x},${y})`);
+                        elvesRouge[i][0] = x_new;  
+                        elvesRouge[i][1] = y_new;  
+                        console.log(`Coordonnées mises à jour en (${x_new},${y_new})`);
+                        break;
+                    }
+                }
+            }
+
+        }
+    }
+    else if (gameState.currentPlayerIndex === 0 || gameState.currentPlayerIndex === 2){
     // Partie déplacement du lutin
     let moveCompleted = false;
     do {
@@ -232,6 +381,7 @@ async function handlePlayingTurn(state) {
     enableElvesDragEvents();
     
     return;
+}
 }
 
 // function tryRotateBridge(coords, state) {
@@ -923,44 +1073,7 @@ async function pontuXL(state) {
         console.log(gameState);
         console.log(`Current phase: ${state.phase}`);
 
-        if(gameState.phase === "playing" && (gameState.currentPlayerIndex === 1 || gameState.currentPlayerIndex === 3)){
-            
-            console.log("voila la phase", gameState.phase);
-            sendtobackend()
-
-            window.addEventListener('Message', (e) => {
-                console.log("Message reçu dans un autre fichier:", e.detail);
-                data = JSON.parse(e.detail);
-                console.log("HEEEEEEEEEEEEEEEEERE", JSON.stringify(data));
-
-
-                const result1 = data.result1;
-                console.log("voici le premier resultat", JSON.stringify(result1));
-
-                const premier_elem = result1[0]
-                const deuxieme_elem = result1[1][0]
-                const troisieme_elem = result1[1][1][0]
-                const quatrieme_elem = result1[1][1][1]
-                
-                console.log("voici le premier elem", JSON.stringify(premier_elem));
-                
-                console.log("voici le 2eme elem", JSON.stringify(deuxieme_elem));
-                
-                console.log("voici le 3eme elem", JSON.stringify(troisieme_elem));
-                
-                console.log("voici le 4eme elem", JSON.stringify(quatrieme_elem));
-
-                const coord_final = reformater_coord(premier_elem);
-                console.log("FORMAT FINAL", coord_final);
-                const coord_final2 = reformater_coord(deuxieme_elem);
-                console.log("FORMAT FINAL 2", coord_final2);
-                const coord_final3 = reformater_bridge(troisieme_elem);
-                console.log("FORMAT FINAL 3", coord_final3);
-                const coord_final4 = reformater_bridge(quatrieme_elem);
-                console.log("FORMAT FINAL 4", quatrieme_elem);
-              });
         
-        }
 
         await playTurn(state);
 
