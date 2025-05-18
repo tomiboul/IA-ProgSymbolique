@@ -118,10 +118,23 @@ async function attendreMessageIA() {
 
             const data = JSON.parse(e.detail);
             const result2 = data.result2;
+            const result3 = data.result3;
             const coord_final = reformater_coord(result2);
-             
+            
+            const coord_final1 = reformater_coord(result3);
 
-            resolve(coord_final);
+            let choix;
+            if (Math.random() < 0.5) {
+                choix = coord_final;
+                console.log("VOICI LE CHOIX : coord_final (depuis result2)", choix);
+            } else {
+                choix = coord_final1;
+                console.log("VOICI LE CHOIX : coord_final1 (depuis result3)", choix);
+            }
+            
+
+             
+            resolve(choix);
         };
 
         window.addEventListener('Message', handler);
@@ -133,7 +146,7 @@ async function handlePlacementTurn(state) {
     let x, y;
     
     if (gameState.currentPlayerIndex === 0 || gameState.currentPlayerIndex === 2) {
-        // Cas du joueur humain : attendre un clic
+       
         do {
             const clickedCell = await waitForClickOnCell();
             const id = clickedCell.id;
@@ -144,9 +157,9 @@ async function handlePlacementTurn(state) {
     } else if (gameState.currentPlayerIndex === 1 || gameState.currentPlayerIndex === 3) {
         
         if (gameState.phase === "placement") {
-            sendtobackend(); // demande au backend
+            sendtobackend(); 
 
-            const coord = await attendreMessageIA(); // on attend ici que le message arrive
+            const coord = await attendreMessageIA(); 
             const parts = coord.replace(/[()]/g, "").split(", ");
             x = parseInt(parts[1], 10);
             y = parseInt(parts[2], 10);}
