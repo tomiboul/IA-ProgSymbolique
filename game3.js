@@ -1,3 +1,5 @@
+
+const IAplacement = [];
 const gameState = {
     boardSize: 6,
     players: [
@@ -11,7 +13,6 @@ const gameState = {
     bridges: new Set(), // a bridge follows this format: "x1,y1-x2,y2", 
     // ex: "1,2-3,4" is a bridge that connects cells (1,2) and (3,4)
     // To check if a bridge exists, do gameState.bridges.has("x1,y1-x2,y2")
-
     doesBridgeExist(bridgeCoords) {
         if (Array.isArray(bridgeCoords)) {
             // Si bridgeCoords est un tableau de coordonnées [[x1, y1], [x2, y2]]
@@ -110,15 +111,46 @@ const verticalBridgeSource   = 'images/vertical_bridge.png'
 
 board = document.getElementById("board");
 
+async function attendreMessageIA() {
+    return new Promise((resolve) => {
+        const handler = (e) => {
+            window.removeEventListener('Message', handler); 
+
+            const data = JSON.parse(e.detail);
+            const result2 = data.result2;
+            const coord_final = reformater_coord(result2);
+             
+
+            resolve(coord_final);
+        };
+
+        window.addEventListener('Message', handler);
+    });
+}
+
+
 async function handlePlacementTurn(state) {
     let x, y;
-    do {
-        const clickedCell = await waitForClickOnCell();
-        const id = clickedCell.id;
-        const parts = id.split("-");
-        x = parseInt(parts[0], 10);
-        y = parseInt(parts[1], 10);
-    } while (!checkIfCellIsFree(x, y, state));
+    
+    if (gameState.currentPlayerIndex === 0 || gameState.currentPlayerIndex === 2) {
+        // Cas du joueur humain : attendre un clic
+        do {
+            const clickedCell = await waitForClickOnCell();
+            const id = clickedCell.id;
+            const parts = id.split("-");
+            x = parseInt(parts[0], 10);
+            y = parseInt(parts[1], 10);
+        } while (!checkIfCellIsFree(x, y, state));
+    } else if (gameState.currentPlayerIndex === 1 || gameState.currentPlayerIndex === 3) {
+        
+        if (gameState.phase === "placement") {
+            sendtobackend(); // demande au backend
+
+            const coord = await attendreMessageIA(); // on attend ici que le message arrive
+            const parts = coord.replace(/[()]/g, "").split(", ");
+            x = parseInt(parts[1], 10);
+            y = parseInt(parts[2], 10);}
+    }
 
     const currentPlayer = state.players[state.currentPlayerIndex];
     // console.log("       handlePlacementTurn(): players before adding the elf: ");
@@ -833,7 +865,6 @@ function checkPhase(state) {
         console.log("Current phase was set to 'playing'");
     }
 }
-
 // pontuXL() mise à jour 
 async function pontuXL(state) {
     let i = 1;
@@ -844,22 +875,6 @@ async function pontuXL(state) {
         console.log(`gameState au tour ${i} : `)
         console.log(gameState);
         console.log(`Current phase: ${state.phase}`);
-
-        await playTurn(state);
-
-        console.log(`Phase after playTurn: ${state.phase}`);
-        i++;
-
-        checkPhase(state);
-        console.log(`Phase after checkPhase: ${state.phase}`);
-
-        checkForLoser(state);
-        console.log(`Players eliminated: ${state.players.filter(p => p.eliminated).map(p => p.colour)}`);
-
-        setNextTurn(state);
-        console.log(`Next player index: ${state.currentPlayerIndex}`);
-        console.log("voila les lutins")
-        
         if(gameState.phase === "playing" && (gameState.currentPlayerIndex === 1 || gameState.currentPlayerIndex === 3)){
             
             console.log("voila la phase", gameState.phase);
@@ -896,32 +911,25 @@ async function pontuXL(state) {
                 const coord_final4 = reformater_bridge(quatrieme_elem);
                 console.log("FORMAT FINAL 4", quatrieme_elem);
               });
+        
         }
 
-        else if(gameState.phase === "placement" && (gameState.currentPlayerIndex === 1 || gameState.currentPlayerIndex === 3)){
-            sendtobackend()
+        await playTurn(state);
 
-            window.addEventListener('Message', (e) => {
-                console.log("voila la phase", gameState.phase);
-                console.log("Message reçu dans un autre fichier:", e.detail);
-                data = JSON.parse(e.detail);
-                console.log("HEEEEEEEEEEEEEEEEERE", JSON.stringify(data));
+        console.log(`Phase after playTurn: ${state.phase}`);
+        i++;
 
+        checkPhase(state);
+        console.log(`Phase after checkPhase: ${state.phase}`);
 
-                const result2 = data.result2;
-                console.log("voici le premier resultat", JSON.stringify(result2));        
+        checkForLoser(state);
+        console.log(`Players eliminated: ${state.players.filter(p => p.eliminated).map(p => p.colour)}`);
 
-                const coord_final1 = reformater_coord(result2);
-                console.log("FORMAT FINAL", coord_final1);
-
-                
-                const result3 = data.result3;
-                console.log("voici le premier resultat", JSON.stringify(result3));        
-
-                const coord_final2 = reformater_coord(result3);
-                console.log("FORMAT FINAL", coord_final2);
-              });
-        }
+        setNextTurn(state);
+        console.log(`Next player index: ${state.currentPlayerIndex}`);
+        console.log("voila les lutins")
+        
+        
         
     }
 
