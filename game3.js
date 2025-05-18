@@ -192,7 +192,7 @@ async function handlePlacementTurn(state) {
     }
 
     cell.appendChild(elfImage);
-    elfImage.addEventListener("dragstart", dragStart);
+    // elfImage.addEventListener("dragstart", dragStart);
 }
 
 function waitForClickOnBridge(state) {
@@ -326,7 +326,11 @@ async function handlePlayingTurn(state) {
                 const isHorizontal = y_new_bridge === y1_new_bridge;
                 const isVertical = x_new_bridge === x1_new_bridge;
                 // add background to new bridge
-                if (isHorizontal) newBrdigeElement.style.backgroundImage=     "url(" + horizontalBridgeSource +")";
+                if (isHorizontal) {
+                    newBrdigeElement.style.backgroundImage=     "url(" + horizontalBridgeSource +")";
+                    newBrdigeElement.style.backgroundPosition = "center";
+                    newBrdigeElement.style.backgroundSize     = "cover";
+                    }
                 else if (isVertical) {
                     newBrdigeElement.style.backgroundImage = "url(" + verticalBridgeSource +")"
                     newBrdigeElement.style.backgroundPosition = "center";
@@ -692,6 +696,7 @@ function enableElvesDragEvents() {
         elf.addEventListener('dragover', dragOver);
         elf.addEventListener('dragleave', dragLeave);
         elf.addEventListener('drop', drop);
+        elf.addEventListener('dragstart', dragStart);
     });
 }
 
@@ -744,6 +749,7 @@ async function playTurn(state) {
         await handlePlacementTurn(state);
     } else if (state.phase === "playing") {
         console.log("Entering handlePlayingTurn()");
+        enableElvesDragEvents();
         await handlePlayingTurn(state);
     }
 }
@@ -1021,7 +1027,6 @@ function checkForLoser(state) {
 function checkIfGameFinished(state) {
     const activePlayers = state.players.filter(player => !player.eliminated);
     const amountActivePlayers = activePlayers.length;
-    console.warn("AAAAAAAAAAAAAAAAAAAAAAAAAAAAH");
     if (amountActivePlayers === 1) {
         state.phase = 'finished';
         console.log("Current phase was set to 'finished'");
@@ -1052,6 +1057,8 @@ function setNextTurn(state) {
 // checkPhase() mise à jour ✅
 function checkPhase(state) {
     if (state.phase === "placement") {
+        disableElvesDragEvents();
+
         for (const player of state.players) {
             if (player.elves.length < 4) return;
         }

@@ -148,6 +148,12 @@ function setOnDropCallback(cb) {
 function drop(e) {
     e.preventDefault();
 
+    // Guard: If originCell is null, abort drop
+    if (!originCell) {
+        console.warn("Drop event with null originCell. Aborting drop.");
+        return;
+    }
+
     const id = e.dataTransfer.getData('text/plain');
     const draggable = document.getElementById(id);
     const dropTarget = e.target.closest('.cell');
